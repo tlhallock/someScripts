@@ -11,9 +11,7 @@ public class Compiler
 	
 	public static BufferedImage compile(Latex latex)
 	{
-	
-			
-			
+			return null;
 	}
 
 }

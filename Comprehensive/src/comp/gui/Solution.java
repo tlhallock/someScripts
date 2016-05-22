@@ -5,6 +5,7 @@
  */
 package comp.gui;
 
+import comp.model.Canvas;
 import comp.model.Card;
 import comp.model.Content;
 

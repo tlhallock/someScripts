@@ -13,3 +13,9 @@ hs_err_pid*
 
 
 libgs/*
+
+Comprehensive/bin/
+DockablePanels/bin/
+FileExplorer/bin/
+SnapshotLib/bin/
+eclipse/
