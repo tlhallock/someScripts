@@ -1,0 +1,136 @@
+{
+  "colors" : {
+    "column drag" : {
+      "red" : 0,
+      "green" : 255,
+      "blue" : 255,
+      "alpha" : 255
+    },
+    "DETAILS_LIST_HEADER_FOREGROUND__HIGHLIGHTED" : {
+      "red" : 255,
+      "green" : 255,
+      "blue" : 255,
+      "alpha" : 255
+    },
+    "shadow" : {
+      "red" : 0,
+      "green" : 0,
+      "blue" : 0,
+      "alpha" : 255
+    },
+    "DETAILS_LIST_HEADER_FOREGROUND_NHIGHLIGHTED" : {
+      "red" : 0,
+      "green" : 0,
+      "blue" : 0,
+      "alpha" : 255
+    },
+    "column divider" : {
+      "red" : 0,
+      "green" : 0,
+      "blue" : 0,
+      "alpha" : 255
+    },
+    "simple view background" : {
+      "red" : 0,
+      "green" : 255,
+      "blue" : 0,
+      "alpha" : 255
+    },
+    "detail file background, highlighted, not marked" : {
+      "red" : 255,
+      "green" : 204,
+      "blue" : 0,
+      "alpha" : 255
+    },
+    "detail file foreground, even, not marked" : {
+      "red" : 0,
+      "green" : 0,
+      "blue" : 0,
+      "alpha" : 255
+    },
+    "detail file foreground, even, marked" : {
+      "red" : 0,
+      "green" : 0,
+      "blue" : 0,
+      "alpha" : 255
+    },
+    "list background (is it used?)" : {
+      "red" : 0,
+      "green" : 0,
+      "blue" : 0,
+      "alpha" : 255
+    },
+    "header drag" : {
+      "red" : 0,
+      "green" : 255,
+      "blue" : 255,
+      "alpha" : 255
+    },
+    "detail file background, even, not marked" : {
+      "red" : 255,
+      "green" : 255,
+      "blue" : 0,
+      "alpha" : 255
+    },
+    "detail file foreground, odd, marked" : {
+      "red" : 0,
+      "green" : 0,
+      "blue" : 0,
+      "alpha" : 255
+    },
+    "DETAILS_LIST_HEADER_BACKGROUND__HIGHLIGHTED" : {
+      "red" : 0,
+      "green" : 0,
+      "blue" : 255,
+      "alpha" : 255
+    },
+    "detail file background, odd, marked" : {
+      "red" : 51,
+      "green" : 204,
+      "blue" : 51,
+      "alpha" : 255
+    },
+    "detail file foreground, highlighted, not marked" : {
+      "red" : 255,
+      "green" : 255,
+      "blue" : 255,
+      "alpha" : 255
+    },
+    "file divider" : {
+      "red" : 255,
+      "green" : 255,
+      "blue" : 255,
+      "alpha" : 255
+    },
+    "detail file foreground, odd, not marked" : {
+      "red" : 0,
+      "green" : 0,
+      "blue" : 0,
+      "alpha" : 255
+    },
+    "DETAILS_LIST_HEADER_BACKGROUND_NHIGHLIGHTED" : {
+      "red" : 255,
+      "green" : 255,
+      "blue" : 255,
+      "alpha" : 255
+    },
+    "detail file background, highlighted, marked" : {
+      "red" : 255,
+      "green" : 153,
+      "blue" : 51,
+      "alpha" : 255
+    },
+    "detail file background, even, marked" : {
+      "red" : 153,
+      "green" : 255,
+      "blue" : 153,
+      "alpha" : 255
+    },
+    "detail file background, odd, not marked" : {
+      "red" : 255,
+      "green" : 255,
+      "blue" : 255,
+      "alpha" : 255
+    }
+  }
+}
