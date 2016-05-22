@@ -19,3 +19,17 @@ DockablePanels/bin/
 FileExplorer/bin/
 SnapshotLib/bin/
 eclipse/
+/DockablePanels/nbproject/private/
+/SnapshotLib/nbproject/private/
+/Comprehensive/nbproject/private/
+/FileExplorer/nbproject/private/
+
+Comprehensive/build.xml
+Comprehensive/nbproject/
+DockablePanels/build.xml
+DockablePanels/nbproject/
+FileExplorer/build.xml
+FileExplorer/nbproject/
+SnapshotLib/build.xml
+SnapshotLib/nbproject/
+
