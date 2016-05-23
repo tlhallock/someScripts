@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.TreeSet;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -12,45 +13,42 @@ import files.app.Logger.LogLevel;
 
 public final class ColorSelector
 {
-	private HashMap<String, SerializableColor> colors = new HashMap<>();
-	
 	private ColorSelector() {}
-	
-	
+
+	// Still leaving these as non static in case I want to test...
 	public Color getFileBackgroundColor(boolean even, boolean marked, boolean highlighted)
 	{
-		
 		if (highlighted)
 		{
 			if (marked)
 			{
-				return colors.get(DETAILS_FILE_BACKGROUND_HIGHLIGHTED_MARKED).getColor();
+				return (DETAILS_FILE_BACKGROUND_HIGHLIGHTED_MARKED).getColor();
 			}
 			else
 			{
-				return colors.get(DETAILS_FILE_BACKGROUND_HIGHLIGHTED).getColor();
+				return (DETAILS_FILE_BACKGROUND_HIGHLIGHTED).getColor();
 			}
 		}
 		if (even)
 		{
 			if (marked)
 			{
-				return colors.get(DETAILS_FILE_BACKGROUND_EVEN_MARKED).getColor();
+				return (DETAILS_FILE_BACKGROUND_EVEN_MARKED).getColor();
 			}
 			else
 			{
-				return colors.get(DETAILS_FILE_BACKGROUND_EVEN).getColor();
+				return (DETAILS_FILE_BACKGROUND_EVEN).getColor();
 			}
 		}
 		else
 		{
 			if (marked)
 			{
-				return colors.get(DETAILS_FILE_BACKGROUND_MARKED).getColor();
+				return (DETAILS_FILE_BACKGROUND_MARKED).getColor();
 			}
 			else
 			{
-				return colors.get(DETAILS_FILE_BACKGROUND).getColor();
+				return (DETAILS_FILE_BACKGROUND).getColor();
 			}
 		}
 	}
@@ -60,60 +58,60 @@ public final class ColorSelector
 		{
 			if (marked)
 			{
-				return colors.get(DETAILS_FILE_FOREGROUND_HIGHLIGHTED_MARKED).getColor();
+				return (DETAILS_FILE_FOREGROUND_HIGHLIGHTED_MARKED).getColor();
 			}
 			else
 			{
-				return colors.get(DETAILS_FILE_FOREGROUND_HIGHLIGHTED).getColor();
+				return (DETAILS_FILE_FOREGROUND_HIGHLIGHTED).getColor();
 			}
 		}
 		if (even)
 		{
 			if (marked)
 			{
-				return colors.get(DETAILS_FILE_FOREGROUND_EVEN_MARKED).getColor();
+				return (DETAILS_FILE_FOREGROUND_EVEN_MARKED).getColor();
 			}
 			else
 			{
-				return colors.get(DETAILS_FILE_FOREGROUND_EVEN).getColor();
+				return (DETAILS_FILE_FOREGROUND_EVEN).getColor();
 			}
 		}
 		else
 		{
 			if (marked)
 			{
-				return colors.get(DETAILS_FILE_FOREGROUND_MARKED).getColor();
+				return (DETAILS_FILE_FOREGROUND_MARKED).getColor();
 			}
 			else
 			{
-				return colors.get(DETAILS_FILE_FOREGROUND).getColor();
+				return (DETAILS_FILE_FOREGROUND).getColor();
 			}
 		}
 	}
 	public Color getColumnHeaderBackgroundColor(boolean folderHighlighted)
 	{
-		return colors.get(folderHighlighted ? DETAILS_LIST_HEADER_BACKGROUND_HIGHLIGHTED : DETAILS_LIST_HEADER_BACKGROUND_NHIGHLIGHTED).getColor();
+		return (folderHighlighted ? DETAILS_LIST_HEADER_BACKGROUND_HIGHLIGHTED : DETAILS_LIST_HEADER_BACKGROUND_NHIGHLIGHTED).getColor();
 	}
 	public Color getColumnHeaderForegroundColor(boolean highlighted)
- {
-		return colors.get(highlighted ? DETAILS_LIST_HEADER_FOREGROUND_HIGHLIGHTED : DETAILS_LIST_HEADER_FOREGROUND_NHIGHLIGHTED).getColor();
+	{
+		return (highlighted ? DETAILS_LIST_HEADER_FOREGROUND_HIGHLIGHTED : DETAILS_LIST_HEADER_FOREGROUND_NHIGHLIGHTED).getColor();
 	}
 	
 	public Color getColumnDividerColor()
 	{
-		return colors.get(DETAILS_COLUMN_DIVIDER).getColor();
+		return (DETAILS_COLUMN_DIVIDER).getColor();
 	}
 	public Color getListBackground() {
-		return colors.get(DETAILS_LIST_BACKGROUND).getColor();
+		return (DETAILS_LIST_BACKGROUND).getColor();
 	}
 	public Color getFileDividerColor(boolean even, boolean marked, boolean highlighted) {
-		return colors.get(DETAILS_FILE_DIVIDER).getColor();
+		return (DETAILS_FILE_DIVIDER).getColor();
 	}
 	public Color getColumnDragColor() {
-		return colors.get(DETAILS_COLUMN_DRAG).getColor();
+		return (DETAILS_COLUMN_DRAG).getColor();
 	}
 	public Color getColumnHeaderDragColor() {
-		return colors.get(DETAILS_LIST_HEADER_DRAG).getColor();
+		return (DETAILS_LIST_HEADER_DRAG).getColor();
 	}
 	public Color getNotShadowBorderColor(Color original)
 	{
@@ -122,10 +120,10 @@ public final class ColorSelector
 	}
 	public Color getShadowBorderColor(Color original)
 	{
-		return colors.get(SHADOW).getColor();
+		return (SHADOW).getColor();
 	}
 	public Color getSimpleViewBackground() {
-		return colors.get(SIMPLE_FILE_BACKGROUND).getColor();
+		return (SIMPLE_FILE_BACKGROUND).getColor();
 	}
 	
 
@@ -133,19 +131,37 @@ public final class ColorSelector
 	
 	
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
-	public static ColorSelector loadHumanReadable(Path path) throws IOException
+	private static void loadHumanReadable(Path path) throws IOException
 	{
-		ColorSelector read = Serialization.writer.read(path.toFile(), ColorSelector.class);
-		read.fillRestHashMap();
-		return read;
+		ColorPropertyList list = Serialization.writer.read(path.toFile(), ColorPropertyList.class);
+		HashMap<String,SerializableColor> map = list.toMap();
+		for (SerializableColorProperty p : ALL_COLORS)
+			p.set(map.get(p.name));
 	}
 
-	public void writeHumanReadable(Path path) throws IOException
+	private static void writeHumanReadable(Path path) throws IOException
 	{
-		Serialization.writer.write(path.toFile(), this);
+		for (SerializableColorProperty p : ALL_COLORS)
+			p.setIfNotWritten();
+		ColorPropertyList list = new ColorPropertyList();
+		for (SerializableColorProperty p : ALL_COLORS)
+			list.list.add(p);
+		Serialization.writer.write(path.toFile(), list);
 	}
-	public void save()
+	public static void save()
 	{
 		try {
 			writeHumanReadable(Paths.get(Application.getApplication().getSettings().getColorsPath()));
@@ -158,20 +174,142 @@ public final class ColorSelector
 	{
 		Path path = Paths.get(Application.getApplication().getSettings().getColorsPath());
 		try {
-			return loadHumanReadable(path);
+			loadHumanReadable(path);
 		} catch (IOException e) {
 			Application.getApplication().getLogger().log(LogLevel.Normal, "Unable to read colors file");
 			e.printStackTrace();
 			try {
-				new ColorSelector().fillRestHashMap().save();
-				return loadHumanReadable(path);
+				save();
+				loadHumanReadable(path);
 			} catch (IOException e2) {
 				Application.getApplication().getLogger().log(LogLevel.Minimal, "Unable to read colors file", e2);
 				return null;
 			}
 		}
+		return new ColorSelector();
 	}
 
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+	private static class SerializableColor
+	{
+		private int red;
+		private int green;
+		private int blue;
+		private int alpha;
+		
+		private SerializableColor() {}
+		
+		private SerializableColor(Color color)
+		{
+			this.red = color.getRed();
+			this.green = color.getGreen();
+			this.blue = color.getBlue();
+			this.alpha = color.getAlpha();
+		}
+		public Color getColor()
+		{
+			return new Color(red, green, blue, alpha);
+		}
+	}
+	private static final class SerializableColorProperty implements Comparable<SerializableColorProperty>
+	{
+		private String name;
+		private SerializableColor color;
+		
+		@JsonIgnore
+		private SerializableColor defaultColor;
+		@JsonIgnore
+		private Color cachedColor;
+		
+		// Used by json
+		public SerializableColorProperty() {}
+		
+		public SerializableColorProperty(String name, SerializableColor defaultColor)
+		{
+			this.name = name;
+			this.defaultColor = defaultColor;
+		}
+		
+		private void set(SerializableColor color)
+		{
+			if (color == null) return;
+			this.color = color;
+		}
+		
+		private void setIfNotWritten()
+		{
+			if (color == null)
+				color = defaultColor;
+		}
+		
+		public Color getColor()
+		{
+			if (cachedColor != null)
+				return cachedColor;
+			
+			setIfNotWritten();
+			return cachedColor = color.getColor();
+		}
+
+		@Override
+		public int compareTo(SerializableColorProperty o)
+		{
+			return name.compareTo(o.name);
+		}
+		public boolean equals(Object other)
+		{
+			if (!(other instanceof SerializableColorProperty))
+				return false;
+			return ((SerializableColorProperty) other).name.equals(name);
+		}
+	}
+	private static class ColorPropertyList
+	{
+		TreeSet<SerializableColorProperty> list = new TreeSet<>();
+		
+		HashMap<String, SerializableColor> toMap()
+		{
+			HashMap<String, SerializableColor> returnValue = new HashMap<>();
+			for (SerializableColorProperty p : list)
+				returnValue.put(p.name, p.color);
+			return returnValue;
+		}
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+	
 	
 	
 	
@@ -203,116 +341,57 @@ public final class ColorSelector
 	private static final Color DARK_GREEN	= new Color( 51, 204,  51);
 	private static final Color COOL_ORANGE	= new Color(255, 153,  51);
 	private static final Color OTHER_ORANGE	= new Color(255, 204,   0);
-	
-	private static final String SHADOW = "shadow";
-	private static final String DETAILS_COLUMN_DRAG = "column drag";
-	private static final String DETAILS_LIST_BACKGROUND = "list background (is it used?)";
-	private static final String DETAILS_COLUMN_DIVIDER = "column divider";
-	private static final String DETAILS_LIST_HEADER_FOREGROUND_NHIGHLIGHTED = "DETAILS_LIST_HEADER_FOREGROUND_NHIGHLIGHTED";
-	private static final String DETAILS_LIST_HEADER_FOREGROUND_HIGHLIGHTED = "DETAILS_LIST_HEADER_FOREGROUND__HIGHLIGHTED";
-	private static final String DETAILS_LIST_HEADER_BACKGROUND_NHIGHLIGHTED = "DETAILS_LIST_HEADER_BACKGROUND_NHIGHLIGHTED";
-	private static final String DETAILS_LIST_HEADER_BACKGROUND_HIGHLIGHTED = "DETAILS_LIST_HEADER_BACKGROUND__HIGHLIGHTED";
-	private static final String DETAILS_LIST_HEADER_DRAG = "header drag";
-	private static final String DETAILS_FILE_DIVIDER = "file divider";
-	
 
-	private static final String SIMPLE_FILE_BACKGROUND = "simple view background";	
+	private static final SerializableColorProperty SIMPLE_FILE_BACKGROUND 				= new SerializableColorProperty("simple view background"	                  , new SerializableColor(Color.green )    );
+	private static final SerializableColorProperty SHADOW 						= new SerializableColorProperty("shadow"                                          , new SerializableColor(Color.black )    );
+	private static final SerializableColorProperty DETAILS_COLUMN_DRAG 				= new SerializableColorProperty("column drag"                                     , new SerializableColor(Color.cyan  )    );
+	private static final SerializableColorProperty DETAILS_LIST_BACKGROUND				= new SerializableColorProperty("list background (is it used?)"                   , new SerializableColor(Color.cyan  )    );
+	private static final SerializableColorProperty DETAILS_COLUMN_DIVIDER 				= new SerializableColorProperty("column divider"                                  , new SerializableColor(Color.black )    );
+	private static final SerializableColorProperty DETAILS_LIST_HEADER_FOREGROUND_NHIGHLIGHTED 	= new SerializableColorProperty("DETAILS_LIST_HEADER_FOREGROUND_NHIGHLIGHTED"     , new SerializableColor(Color.black )    );
+	private static final SerializableColorProperty DETAILS_LIST_HEADER_FOREGROUND_HIGHLIGHTED 	= new SerializableColorProperty("DETAILS_LIST_HEADER_FOREGROUND__HIGHLIGHTED"     , new SerializableColor(Color.black )    );
+	private static final SerializableColorProperty DETAILS_LIST_HEADER_BACKGROUND_NHIGHLIGHTED 	= new SerializableColorProperty("DETAILS_LIST_HEADER_BACKGROUND_NHIGHLIGHTED"     , new SerializableColor(Color.WHITE )    );
+	private static final SerializableColorProperty DETAILS_LIST_HEADER_BACKGROUND_HIGHLIGHTED 	= new SerializableColorProperty("DETAILS_LIST_HEADER_BACKGROUND__HIGHLIGHTED"     , new SerializableColor(Color.white )    );
+	private static final SerializableColorProperty DETAILS_LIST_HEADER_DRAG 			= new SerializableColorProperty("header drag"                                     , new SerializableColor(Color.blue  )    );
+	private static final SerializableColorProperty DETAILS_FILE_DIVIDER 				= new SerializableColorProperty("file divider"                                    , new SerializableColor(Color.white )    );
+	private static final SerializableColorProperty DETAILS_FILE_BACKGROUND_HIGHLIGHTED_MARKED 	= new SerializableColorProperty("details file background, highlighted, marked"    , new SerializableColor(COOL_ORANGE )    );
+	private static final SerializableColorProperty DETAILS_FILE_BACKGROUND_HIGHLIGHTED 		= new SerializableColorProperty("details file background, highlighted, not marked", new SerializableColor(OTHER_ORANGE)    );
+	private static final SerializableColorProperty DETAILS_FILE_BACKGROUND_EVEN_MARKED 		= new SerializableColorProperty("details file background, even, marked"           , new SerializableColor(LIGHT_GREEN )    );
+	private static final SerializableColorProperty DETAILS_FILE_BACKGROUND_EVEN 			= new SerializableColorProperty("details file background, even, not marked"       , new SerializableColor(Color.yellow)    );
+	private static final SerializableColorProperty DETAILS_FILE_BACKGROUND_MARKED 			= new SerializableColorProperty("details file background, odd, marked"            , new SerializableColor(DARK_GREEN  )    );
+	private static final SerializableColorProperty DETAILS_FILE_BACKGROUND 				= new SerializableColorProperty("details file background, odd, not marked"        , new SerializableColor(Color.WHITE )    );
+	private static final SerializableColorProperty DETAILS_FILE_FOREGROUND_HIGHLIGHTED_MARKED  	= new SerializableColorProperty("details file background, highlighted, marked"    , new SerializableColor(Color.WHITE )    );
+	private static final SerializableColorProperty DETAILS_FILE_FOREGROUND_HIGHLIGHTED		= new SerializableColorProperty("details file foreground, highlighted, not marked", new SerializableColor(Color.WHITE )    );
+	private static final SerializableColorProperty DETAILS_FILE_FOREGROUND_EVEN_MARKED 		= new SerializableColorProperty("details file foreground, even, marked"           , new SerializableColor(Color.BLACK )    );
+	private static final SerializableColorProperty DETAILS_FILE_FOREGROUND_EVEN 			= new SerializableColorProperty("details file foreground, even, not marked"       , new SerializableColor(Color.BLACK )    );
+	private static final SerializableColorProperty DETAILS_FILE_FOREGROUND_MARKED 			= new SerializableColorProperty("details file foreground, odd, marked"            , new SerializableColor(Color.BLACK )    );
+	private static final SerializableColorProperty DETAILS_FILE_FOREGROUND 				= new SerializableColorProperty("details file foreground, odd, not marked"        , new SerializableColor(Color.BLACK )    );
 	
 	
-	private static final String DETAILS_FILE_BACKGROUND_HIGHLIGHTED_MARKED 	= "detail file background, highlighted, marked";
-	private static final String DETAILS_FILE_BACKGROUND_HIGHLIGHTED 		= "detail file background, highlighted, not marked";
-	private static final String DETAILS_FILE_BACKGROUND_EVEN_MARKED 		= "detail file background, even, marked";
-	private static final String DETAILS_FILE_BACKGROUND_EVEN 				= "detail file background, even, not marked";
-	private static final String DETAILS_FILE_BACKGROUND_MARKED 				= "detail file background, odd, marked";
-	private static final String DETAILS_FILE_BACKGROUND 					= "detail file background, odd, not marked";
-	private static final String DETAILS_FILE_FOREGROUND_HIGHLIGHTED_MARKED  = "detail file background, highlighted, marked";    
-	private static final String DETAILS_FILE_FOREGROUND_HIGHLIGHTED			= "detail file foreground, highlighted, not marked";
-	private static final String DETAILS_FILE_FOREGROUND_EVEN_MARKED 		= "detail file foreground, even, marked";           
-	private static final String DETAILS_FILE_FOREGROUND_EVEN 				= "detail file foreground, even, not marked";       
-	private static final String DETAILS_FILE_FOREGROUND_MARKED 				= "detail file foreground, odd, marked";            
-	private static final String DETAILS_FILE_FOREGROUND 					= "detail file foreground, odd, not marked";        
-	
-	
-	
-	
-	
-	private ColorSelector fillRestHashMap()
+	private static final SerializableColorProperty[] ALL_COLORS = new SerializableColorProperty[]
 	{
-		if (!colors.containsKey(SIMPLE_FILE_BACKGROUND						)) colors.put(SIMPLE_FILE_BACKGROUND								, new SerializableColor(Color.green  ));
-		if (!colors.containsKey(SHADOW										)) colors.put(SHADOW												, new SerializableColor(Color.black  ));
-		if (!colors.containsKey(DETAILS_COLUMN_DRAG 						)) colors.put(DETAILS_COLUMN_DRAG 									, new SerializableColor(Color.cyan   ));
-		if (!colors.containsKey(DETAILS_LIST_HEADER_DRAG 					)) colors.put(DETAILS_LIST_HEADER_DRAG 								, new SerializableColor(Color.cyan   ));
-		if (!colors.containsKey(DETAILS_LIST_BACKGROUND 					)) colors.put(DETAILS_LIST_BACKGROUND 								, new SerializableColor(Color.black  ));
-		if (!colors.containsKey(DETAILS_COLUMN_DIVIDER 						)) colors.put(DETAILS_COLUMN_DIVIDER 								, new SerializableColor(Color.black  ));
-		if (!colors.containsKey(DETAILS_LIST_HEADER_FOREGROUND_NHIGHLIGHTED	)) colors.put(DETAILS_LIST_HEADER_FOREGROUND_NHIGHLIGHTED			, new SerializableColor(Color.black  ));
-		if (!colors.containsKey(DETAILS_LIST_HEADER_FOREGROUND_HIGHLIGHTED 	)) colors.put(DETAILS_LIST_HEADER_FOREGROUND_HIGHLIGHTED 			, new SerializableColor(Color.WHITE  ));
-		if (!colors.containsKey(DETAILS_LIST_HEADER_BACKGROUND_NHIGHLIGHTED )) colors.put(DETAILS_LIST_HEADER_BACKGROUND_NHIGHLIGHTED 			, new SerializableColor(Color.white  ));
-		if (!colors.containsKey(DETAILS_LIST_HEADER_BACKGROUND_HIGHLIGHTED	)) colors.put(DETAILS_LIST_HEADER_BACKGROUND_HIGHLIGHTED			, new SerializableColor(Color.blue   ));
-		if (!colors.containsKey(DETAILS_FILE_DIVIDER 						)) colors.put(DETAILS_FILE_DIVIDER 									, new SerializableColor(Color.white  ));
-
-		if (!colors.containsKey(DETAILS_FILE_BACKGROUND_HIGHLIGHTED_MARKED  ))  colors.put(DETAILS_FILE_BACKGROUND_HIGHLIGHTED_MARKED           , new SerializableColor(COOL_ORANGE  ));
-		if (!colors.containsKey(DETAILS_FILE_BACKGROUND_HIGHLIGHTED         ))  colors.put(DETAILS_FILE_BACKGROUND_HIGHLIGHTED                  , new SerializableColor(OTHER_ORANGE ));
-		if (!colors.containsKey(DETAILS_FILE_BACKGROUND_EVEN_MARKED         ))  colors.put(DETAILS_FILE_BACKGROUND_EVEN_MARKED                  , new SerializableColor(LIGHT_GREEN  ));
-		if (!colors.containsKey(DETAILS_FILE_BACKGROUND_EVEN                ))  colors.put(DETAILS_FILE_BACKGROUND_EVEN                         , new SerializableColor(Color.yellow ));
-		if (!colors.containsKey(DETAILS_FILE_BACKGROUND_MARKED              ))  colors.put(DETAILS_FILE_BACKGROUND_MARKED                       , new SerializableColor(DARK_GREEN   ));
-		if (!colors.containsKey(DETAILS_FILE_BACKGROUND                     ))  colors.put(DETAILS_FILE_BACKGROUND                              , new SerializableColor(Color.WHITE  ));
-		if (!colors.containsKey(DETAILS_FILE_FOREGROUND_HIGHLIGHTED_MARKED  ))  colors.put(DETAILS_FILE_FOREGROUND_HIGHLIGHTED_MARKED           , new SerializableColor(Color.WHITE  ));
-		if (!colors.containsKey(DETAILS_FILE_FOREGROUND_HIGHLIGHTED         ))  colors.put(DETAILS_FILE_FOREGROUND_HIGHLIGHTED                  , new SerializableColor(Color.WHITE  ));
-		if (!colors.containsKey(DETAILS_FILE_FOREGROUND_EVEN_MARKED         ))  colors.put(DETAILS_FILE_FOREGROUND_EVEN_MARKED                  , new SerializableColor(Color.BLACK  ));
-		if (!colors.containsKey(DETAILS_FILE_FOREGROUND_EVEN                ))  colors.put(DETAILS_FILE_FOREGROUND_EVEN                         , new SerializableColor(Color.BLACK  ));
-		if (!colors.containsKey(DETAILS_FILE_FOREGROUND_MARKED              ))  colors.put(DETAILS_FILE_FOREGROUND_MARKED                       , new SerializableColor(Color.BLACK  ));
-		if (!colors.containsKey(DETAILS_FILE_FOREGROUND                     ))  colors.put(DETAILS_FILE_FOREGROUND                              , new SerializableColor(Color.BLACK  ));
-		
-		return this;
-	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
-	static class SerializableColor
-	{
-		private int red;
-		private int green;
-		private int blue;
-		private int alpha;
-		
-		@JsonIgnore
-		private Color cache;
-		
-		private SerializableColor() {}
-		
-		private SerializableColor(Color color)
-		{
-			this.red = color.getRed();
-			this.green = color.getGreen();
-			this.blue = color.getBlue();
-			this.alpha = color.getAlpha();
-		}
-		
-		public Color getColor()
-		{
-			if (cache != null) return cache;
-			return cache = new Color(red, green, blue, alpha);
-		}
-	}
+		 SIMPLE_FILE_BACKGROUND 			 ,
+		 SHADOW 					 ,
+		 DETAILS_COLUMN_DRAG 				 ,
+		 DETAILS_LIST_BACKGROUND			 ,
+		 DETAILS_COLUMN_DIVIDER 			 ,
+		 DETAILS_LIST_HEADER_FOREGROUND_NHIGHLIGHTED 	 ,
+		 DETAILS_LIST_HEADER_FOREGROUND_HIGHLIGHTED 	 ,
+		 DETAILS_LIST_HEADER_BACKGROUND_NHIGHLIGHTED 	 ,
+		 DETAILS_LIST_HEADER_BACKGROUND_HIGHLIGHTED 	 ,
+		 DETAILS_LIST_HEADER_DRAG 			 ,
+		 DETAILS_FILE_DIVIDER 			         ,
+		 DETAILS_FILE_BACKGROUND_HIGHLIGHTED_MARKED 	 ,
+		 DETAILS_FILE_BACKGROUND_HIGHLIGHTED 		 ,
+		 DETAILS_FILE_BACKGROUND_EVEN_MARKED 		 ,
+		 DETAILS_FILE_BACKGROUND_EVEN 		         ,
+		 DETAILS_FILE_BACKGROUND_MARKED 		 ,
+		 DETAILS_FILE_BACKGROUND 			 ,
+		 DETAILS_FILE_FOREGROUND_HIGHLIGHTED_MARKED  	 ,
+		 DETAILS_FILE_FOREGROUND_HIGHLIGHTED		 ,
+		 DETAILS_FILE_FOREGROUND_EVEN_MARKED 		 ,
+		 DETAILS_FILE_FOREGROUND_EVEN 		         ,
+		 DETAILS_FILE_FOREGROUND_MARKED 		 ,
+		 DETAILS_FILE_FOREGROUND 			 ,
+	};
 	
 }
