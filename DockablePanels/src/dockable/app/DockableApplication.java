@@ -9,11 +9,7 @@ import dockable.dom.DockableRoot;
 import dockable.gui.PanelManagerDisplay;
 import dockable.intf.ApplicationListener;
 import dockable.intf.PanelFactory;
-import dockable.intf.PanelProperties;
-import dockable.tree.LeafNode;
 import dockable.tree.RootNode;
-import dockable.tree.SplitNode;
-import dockable.tree.TabNode;
 
 
 public class DockableApplication
@@ -22,60 +18,51 @@ public class DockableApplication
 	private PanelFactory factory;
 	private DockableRoot components;
 	private boolean locked;
-	private PanelCache registry;
 	
 	public DockableApplication(PanelFactory factory)
 	{
 		setFactory(factory);
+		components = new DockableRoot(this);
+	}
+
+	public void setFactory(PanelFactory panelDriver) {
+		this.factory = panelDriver;
 	}
 	
-	public RootNode newTreeRootNode()
+	public RootNode getRoot()
 	{
-		return new RootNode();
-	}
-
-	public SplitNode createSplit()
-	{
-		return new SplitNode(null);
-	}
-
-	public TabNode createTab() {
-		return new TabNode(null);
-	}
-
-	public LeafNode createPanel(PanelProperties props) {
-		return new LeafNode(props, null);
+		return components.toTree();
 	}
 
 	public void setTree(RootNode root) {
 		PanelCache registry = new PanelCache(factory);
 		if (components != null)
-		{
-			components.cache(registry);
-			components.release();
-		}
+			components.dump(registry);
 		
 		System.out.println("Setting tree:");
-		System.out.println(Writer.writer.toString(root));
+		System.out.println(root);
 		
-		components = new DockableRoot(registry, root, this);
-		show();
+		IdManager.reset(root);
+		
+		components = new DockableRoot(this);
+		components.setTree(registry, root);
+		setVisible(true);
+		
+		registry.dispose();
 	}
 	
-	public void show()
+	public void setVisible(boolean val)
 	{
-		components.setVisible(true);
-	}
-
-	public void setFactory(PanelFactory panelDriver) {
-		this.factory = panelDriver;
-		registry  = new PanelCache(factory);
+		components.setVisible(val);
 	}
 	
-	public RootNode getRoot()
+	public void setLocked(boolean selected)
 	{
-		return components.toTree(null);
+		locked = selected;
 	}
+	
+	
+	
 
 	public void showManagerDisplay() {
 		PanelManagerDisplay panelManagerDisplay = new PanelManagerDisplay(this);
@@ -90,13 +77,41 @@ public class DockableApplication
 		components.findComponentAt(location, panels);
 	}
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	public void make(DockablePanel toRemove, Point newLocation)
 	{
 		if (locked)
 			return;
-
+		
 		toRemove.getParent().remove(toRemove);
-		DockableFrame frame = new DockableFrame(registry, components, newLocation, toRemove);
+		DockableFrame frame = new DockableFrame(components, newLocation, toRemove);
+		
 		frame.setVisible(true);
 		components.addWindow(frame);
 	}
@@ -129,9 +144,28 @@ public class DockableApplication
 			move(toRemove, list.getFirst());
 	}
 
-	public void setLocked(boolean selected)
-    {
-        locked = selected;
-    }
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
 
 }

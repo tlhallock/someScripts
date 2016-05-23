@@ -12,7 +12,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import dockable.tree.SplitNode;
-import dockable.tree.TabNode;
 
 /**
  *
@@ -126,11 +125,7 @@ public class SplitOptions extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        TabNode tab = new TabNode(split.getParent());
-        tab.addChild(split.getLeft());
-        tab.addChild(split.getRight());
-        split.getParent().replace(split, tab);
-        listener.parentInserted(tab);
+        listener.parentInserted(split.toTabs());
     }//GEN-LAST:event_jButton1ActionPerformed
 
 

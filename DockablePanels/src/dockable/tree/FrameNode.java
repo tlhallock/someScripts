@@ -20,19 +20,16 @@ public class FrameNode extends DockableNode
 	private int closeOperation = JFrame.EXIT_ON_CLOSE;
 	private String title;
 	
-	private DockableNode content;
-	
-	public FrameNode(String title, DockableNode parent)
+	public FrameNode(String title, DockableNode parent, int id)
 	{
-		super(parent);
+		super(parent, id, NodeTypes.WINDOW);
 		this.title = title;
-		content = new EmptyNode(this);
 	}
 	
 	
-	public FrameNode(JsonNode node, DockableNode parent)
+	FrameNode(JsonNode node, DockableNode parent)
 	{
-		super(parent);
+		super(node, parent, NodeTypes.WINDOW);
 		
 		JsonNode loc = node.get("bounds");
 		bounds = new Rectangle(
@@ -42,8 +39,6 @@ public class FrameNode extends DockableNode
 				loc.get("height").asInt());
 		closeOperation = node.get("closeOperation").asInt();
 		title = node.get("title").asText();
-		
-		content = NodeTypes.read(node.get("content"), this);
 	}
 
 
@@ -52,25 +47,25 @@ public class FrameNode extends DockableNode
 		this.bounds = bounds;
 	}
 	
-	public void setContent(DockableNode node)
-	{
-		content = node;
-		node.setParent(this);
-	}
-
 	@Override
-	public FrameNode duplicate(DockableNode parent) {
-		FrameNode returnValue = new FrameNode(title, parent);
-		returnValue.content = content.duplicate(this);
-		return returnValue;
+	public FrameNode duplicateSpecifics() {
+		FrameNode frameNode = new FrameNode(title, parent, id);
+		frameNode.setTitle(title);
+		frameNode.bounds = bounds;
+		frameNode.closeOperation = closeOperation;
+		return frameNode;
 	}
 
 
-	public DockableNode getContent() {
-		return content;
+
+	public void setCloseOperation(int defaultCloseOperation)
+	{
+		this.closeOperation = defaultCloseOperation;
 	}
 
-
+	public void setTitle(String text) {
+		title = text;
+	}
 	public String getTitle() {
 		return title;
 	}
@@ -86,67 +81,41 @@ public class FrameNode extends DockableNode
 	}
 
 
+	
 	@Override
-	public DockableTreeNode createJTree() {
-        FrameNode t = this;
-        DockableTreeNode node = new DockableTreeNode(title, this)
-        {
-			@Override
-			public JPanel getCustomization(TreeChangedListener listener) {
-				FrameViewer viewer = new FrameViewer(t);
-				return viewer;
-			}
-		};
-		node.add(content.createJTree());
-		return node;
-	}
-
-
-	@Override
-	public DockableFrame createPanel(PanelCache cache, DockablePanel parent) {
-		return new DockableFrame(cache, parent, this);
-	}
-
-
-	@Override
-	public boolean isEmpty() {
-		return content.isEmpty();
-	}
-
-
-	@Override
-	public DockableNode reduce() {
-		content = content.reduce();
-		content.setParent(this);
-		if (content instanceof EmptyNode)
-			return content;
-		return this;
-	}
-
-
-	public void setTitle(String text) {
-		title = text;
-	}
-
-
-	@Override
-	public void replace(DockableNode child, DockableNode newChild)
+	public JPanel getCustomization(TreeChangedListener listener)
 	{
-		if (content == child) {
-			setContent(newChild);
-		} else {
-			throw new RuntimeException("Not a child.");
-		}
+		FrameViewer viewer = new FrameViewer(this);
+		return viewer;
+	}
+
+	@Override
+	protected DockableFrame createPanel(PanelCache cache, DockablePanel parent) {
+		return new DockableFrame(parent, title, bounds, closeOperation);
+	}
+
+	
+	
+	
+	@Override
+	public boolean splitable()
+	{
+		return false;
+	}
+
+	@Override
+	public boolean tabable()
+	{
+		return false;
 	}
 	
-        @Override
-		public boolean splitable() { return false; }
-        @Override
-		public boolean tabable() { return false; }
-
-
-		@Override
-		protected void addChildrenTo(TabNode combined) {
-			combined.addChild(content);
-		}
+	@Override
+	public DockableNode addChild(DockableNode node) {
+		if (children.isEmpty())
+			children.add(node);
+		else
+			children.set(0, node);
+		node.setParent(this);
+		return node;
+	}
 }

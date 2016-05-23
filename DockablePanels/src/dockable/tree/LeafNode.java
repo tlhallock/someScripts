@@ -18,58 +18,49 @@ public class LeafNode extends DockableNode
 
 	private String type = NodeTypes.COMPONENT;
 	
-	public LeafNode(PanelProperties props, DockableNode parent) {
-		super(parent);
+	public LeafNode(PanelProperties props, DockableNode parent, int id) {
+		super(parent, id, props.getName());
 		this.options = props;
 	}
 	
-	public LeafNode(JsonNode node, DockableNode parent) {
-		super(parent);
+	LeafNode(JsonNode node, DockableNode parent) {
+		super(node, parent, node.get("options").get("name").textValue());
 		options = new PanelProperties(node.get("options"));
 	}
 
+	
+	
+	
+	
+	
+	
+
+	public DockableNode addChild(DockableNode node) {
+		throw new RuntimeException("No children!");
+	}
+	
+	
+	
+	
+	
+	
+	
+	
 	@Override
-	public LeafNode duplicate(DockableNode parent) {
-		return new LeafNode(options.duplicate(), parent);
+	public LeafNode duplicateSpecifics() {
+		return new LeafNode(options.duplicate(), parent, id);
 	}
 
 	@Override
-	public DockableTreeNode createJTree() {
-		DockableTreeNode defaultMutableTreeNode = new DockableTreeNode(options.getName(), this)
-		{
-			@Override
-			public JPanel getCustomization(TreeChangedListener listener) {
-				JPanel panel = new JPanel();
-				panel.setBackground(Color.orange);
-				return panel;
-			}
-		};
-		return defaultMutableTreeNode;
+	public JPanel getCustomization(TreeChangedListener listener)
+	{
+		JPanel panel = new JPanel();
+		panel.setBackground(Color.orange);
+		return panel;
 	}
 
 	@Override
 	public DockableComponent createPanel(PanelCache cache, DockablePanel parent) {
-		return new DockableComponent(parent, options,  
-				cache.getComponent(options));
+		return new DockableComponent(parent, options, cache.getOrCreateComponent(options));
 	}
-
-	@Override
-	public boolean isEmpty() {
-		return false;
-	}
-
-	@Override
-	public LeafNode reduce()
-	{
-		return this;
-	}
-
-	@Override
-	public void replace(DockableNode child, DockableNode newChild)
-	{
-		throw new RuntimeException("Not a parent.");
-	}
-
-	@Override
-	protected void addChildrenTo(TabNode combined) {}
 }

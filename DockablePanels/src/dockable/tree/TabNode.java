@@ -11,49 +11,59 @@ import dockable.dom.DockableTab;
 import dockable.gui.TreeChangedListener;
 
 
-public class TabNode extends SeveralChildrenNode
+public class TabNode extends DockableNode
 {
 	private String type = NodeTypes.TABS;
 	
-	public TabNode(DockableNode parent)
+	public TabNode()
 	{
-		super(parent);
+		this(null, -1);
 	}
 	
-	public TabNode(JsonNode node, DockableNode parent)
+	public TabNode(DockableNode parent, int id)
 	{
-		super(parent);
-		readArray(node);
+		super(parent, id, NodeTypes.TABS);
 	}
-
-	@Override
-	public TabNode duplicate(DockableNode parent) {
-		TabNode returnValue = new TabNode(parent);
-		returnValue.duplcateChildren(this);
-		return returnValue;
-	}
-
-	@Override
-	public DockableTreeNode createJTree() {
-		return addChildren(new DockableTreeNode("Tabs", this)
-		{
-			@Override
-			public JPanel getCustomization(TreeChangedListener notifier) {
-				JPanel panel = new JPanel();
-				panel.setBackground(Color.green);
-				return panel;
-			}
-		});
-	}
-
-
-	@Override
-	public DockableTab createPanel(PanelCache cache, DockablePanel parent) {
-		return new DockableTab(cache, parent, this);
-	}
-
-	public void addTab(DockableNode node)
+	
+	TabNode(JsonNode node, DockableNode parent)
 	{
-		addChild(node);
+		super(node, parent, NodeTypes.TABS);
+	}
+
+	@Override
+	public TabNode duplicateSpecifics() {
+		return new TabNode(parent, id);
+	}
+
+	@Override
+	public JPanel getCustomization(TreeChangedListener notifier)
+	{
+		JPanel panel = new JPanel();
+		panel.setBackground(Color.green);
+		return panel;
+	}
+
+
+	@Override
+	protected DockableTab createPanel(PanelCache cache, DockablePanel parent) {
+		return new DockableTab(parent);
+	}
+	
+
+        public boolean collapseable()
+        {
+        	return false;
+        }
+
+	@Override
+	protected String getDisplayName()
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void addTab(LeafNode nothingNode)
+	{
+		addChild(nothingNode);
 	}
 }

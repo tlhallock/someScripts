@@ -1,8 +1,11 @@
 package dockable.test;
 
 import java.awt.Color;
+import java.awt.Rectangle;
+import java.util.Collections;
 
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 
@@ -10,31 +13,15 @@ import dockable.app.DockableApplication;
 import dockable.intf.PanelFactory;
 import dockable.intf.PanelProperties;
 import dockable.tree.LeafNode;
-import dockable.tree.RootNode;
 import dockable.tree.SplitNode;
 import dockable.tree.TabNode;
-import dockable.tree.FrameNode;
+import dockable.tree.TreeCreator;
 
 public class TestDriver {
 
 	
 	public static void main(String[] args)
 	{
-		
-//		JFrame frame = new JFrame();
-//		frame.setBounds(500,500,500,500);
-//		frame.setTitle("Trying");
-//		
-//		JPanel panel = new JPanel();
-//		panel.setBackground(Color.RED);
-//		
-//		IdkWhereThisGoes.fix(frame.getContentPane(), panel);
-//		frame.setVisible(true);
-//		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//		
-//		if (true) return;
-		
-		
 		DockableApplication application = new DockableApplication(
 				new PanelFactory()
 		{
@@ -55,37 +42,29 @@ public class TestDriver {
 			}
 		});
 		
+		TreeCreator creator = new TreeCreator(application);
+		
 		PanelProperties props = new PanelProperties();
 		props.setName("The editor");
 		props.setCategory("Editor");
 		props.setArgument("file", "none");
 		
-		LeafNode editorNode = application.createPanel(props);
+		LeafNode editorNode = creator.createPanel(props);
 		
 		props = new PanelProperties();
 		props.setName("The Nothing");
 		props.setCategory("Nothing");
 		
-		LeafNode nothingNode = application.createPanel(props);
+		LeafNode nothingNode = creator.createPanel(props);
+		
 
-		RootNode root = application.newTreeRootNode();
+		TabNode createTab = creator.createTab(Collections.singleton(nothingNode));
+		SplitNode split = creator.createSplit(editorNode, createTab, 100, true);
 		
-		FrameNode window = root.createWindow("The app");
+		creator.createWindow("The app", split, new Rectangle(500,500,500,500), JFrame.EXIT_ON_CLOSE);
+		creator.commit();
 		
-		
-		SplitNode split = application.createSplit();
-		window.setContent(split);
-		split.setDivider(100);
-		
-		split.setLeft(editorNode);
-		
-		TabNode createTab = application.createTab();
-		createTab.addTab(nothingNode);
-		split.setRight(createTab);
-		
-		application.setTree(root);
-		
-		application.show();
+		application.setVisible(true);
 		
 		application.showManagerDisplay();
 	}

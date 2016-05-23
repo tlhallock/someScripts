@@ -3,11 +3,16 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.LinkedList;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 
+import dockable.app.DELETE_ME;
 import dockable.app.PanelCache;
 import dockable.app.Utils;
 import dockable.tree.DockableNode;
@@ -20,23 +25,18 @@ public class DockableFrame extends DockablePanel
 	private JFrame frame;
 	private String title;
 	
-	public DockableFrame(PanelCache cache, DockablePanel parent, FrameNode node)
+	public DockableFrame(
+			DockableRoot components,
+			Point location, 
+			DockablePanel content)
 	{
-		this(cache, parent, node.getTitle(), node.getBounds(), node.getCloseOperation());
-		content = node.getContent().createPanel(cache, this);
-		IdkWhereThisGoes.afix(frame.getContentPane(), content.getComponent());
-	}
-	
-	public DockableFrame(PanelCache registry, DockableRoot components, Point location, DockablePanel content) {
-		this(registry, components, "Unnamed frame",
+		this(components, "Unnamed frame",
 				new Rectangle(location.x, location.y, content.getSize().width, content.getSize().height), 
 				JFrame.DISPOSE_ON_CLOSE);
-		this.content = content;
-		IdkWhereThisGoes.afix(frame.getContentPane(), content.getComponent());
+		setContent(content);
 	}
 	
-	private DockableFrame(
-			PanelCache registry,
+	public DockableFrame(
 			DockablePanel parents,
 			String title,
 			Rectangle bounds,
@@ -48,6 +48,37 @@ public class DockableFrame extends DockablePanel
 		frame.setTitle(this.title = title);
 		frame.setBounds(bounds);
 		frame.setDefaultCloseOperation(closeOperation);
+
+		createPopups();
+	}
+
+
+
+	@Override
+	void setTree(PanelCache cache, DockableNode node)
+	{
+		if (!(node instanceof FrameNode))
+			throw new RuntimeException("Better not happen.");
+		FrameNode f = (FrameNode) node;
+		
+		frame.setTitle(f.getTitle());
+		frame.setBounds(f.getBounds());
+		frame.setDefaultCloseOperation(f.getCloseOperation());
+		
+		DockableNode child = node.getChildren().iterator().next();
+		setContent(child.getOrCreatePanel(cache, this));
+		content.setTree(cache, child);
+	}
+	
+	private void setContent(DockablePanel node)
+	{
+		content = node;
+		frame.getContentPane().removeAll();
+//		frame.getContentPane().add(content.getComponent());
+		IdkWhereThisGoes.afix(frame.getContentPane(), content.getComponent());
+		node.setParent(this);
+
+		createPopups();
 	}
 
 	JFrame getFrame()
@@ -56,8 +87,10 @@ public class DockableFrame extends DockablePanel
 	}
 
 	@Override
-	public void cache(PanelCache registry) {
-		content.cache(registry);
+	public void dump(PanelCache registry) {
+		registry.register(this);
+		frame.getContentPane().removeAll();
+		content.dump(registry);
 	}
 
 	@Override
@@ -80,20 +113,9 @@ public class DockableFrame extends DockablePanel
 	}
 
 	@Override
-	public void release()
+	public FrameNode toTree()
 	{
-		content.release();
-		frame.getContentPane().removeAll();
-		frame.dispose();
-	}
-
-	@Override
-	public FrameNode toTree(DockableNode parent)
-	{
-		FrameNode node = new FrameNode(frame.getTitle(), parent);
-		node.setBounds(frame.getBounds());
-		node.setContent(content.toTree(node));
-		return node;
+		return DELETE_ME.createWindow(panelId, frame.getTitle(), content.toTree(), frame.getBounds(), frame.getDefaultCloseOperation());
 	}
 
 	@Override
@@ -113,5 +135,103 @@ public class DockableFrame extends DockablePanel
 
 	public void setVisible(boolean b) {
 		frame.setVisible(true);
+	}
+	
+
+	public void disposeIfJFrame()
+	{
+		frame.dispose();
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+	private void createPopups()
+	{
+		DockableFrame t = this;
+		JPopupMenu menu = new JPopupMenu();
+		JMenuItem item = new JMenuItem("Split bottom");
+		item.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				setContent(wrap(t, content, false, true, frame.getContentPane().getHeight() / 2));
+			}});
+		menu.add(item);
+		
+		item = new JMenuItem("Split top");
+		item.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				setContent(wrap(t, content, false, false, frame.getContentPane().getHeight() / 2));
+			}});
+		menu.add(item);
+
+		item = new JMenuItem("Split right");
+		item.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				setContent(wrap(t, content, true, true, frame.getContentPane().getWidth() / 2));
+			}});
+		menu.add(item);
+		
+
+		item = new JMenuItem("Split left");
+		item.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				setContent(wrap(t, content, true, false, frame.getContentPane().getWidth() / 2));
+			}});
+		menu.add(item);
+
+		if (!(content instanceof DockableTab))
+		{
+		item = new JMenuItem("Tabulate");
+		item.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				System.out.println("Before");
+				System.out.println(content);
+				setContent(wrap(t, content));
+				System.out.println("After");
+				System.out.println(content);
+			}
+		});
+		menu.add(item);
+		}
+		
+		frame.getRootPane().setComponentPopupMenu(menu);
+	}
+
+	@Override
+	public void replace(DockablePanel child, DockablePanel newChild)
+	{
+		if (child != content)
+			throw new RuntimeException("Child does not match!");
+		setContent(newChild);
 	}
 }

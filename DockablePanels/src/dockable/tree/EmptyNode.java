@@ -18,56 +18,55 @@ public class EmptyNode extends DockableNode {
 	
 	private String type = NodeTypes.EMPTY;
 	
-	public EmptyNode(DockableNode parent) {
-		super(parent);
+	public EmptyNode(DockableNode parent, int id) {
+		super(parent, id, NodeTypes.EMPTY);
 	}
 
-	public EmptyNode(JsonNode node, DockableNode parent) {
-		super(parent);
+	EmptyNode(JsonNode node, DockableNode parent) {
+		super(node, parent, NodeTypes.EMPTY);
+	}
+	
+	
+	
+	
+	
+
+
+	@Override
+	public EmptyNode duplicateSpecifics() {
+		return new EmptyNode(parent, id);
+	}
+
+	@Override
+	public JPanel getCustomization(TreeChangedListener listener)
+	{
+		JPanel panel = new JPanel();
+		panel.setBackground(Color.red);
+		return panel;
 	}
 
 
 	@Override
-	public EmptyNode duplicate(DockableNode parent) {
-		return new EmptyNode(parent);
-	}
-
-	@Override
-	public DockableTreeNode createJTree() {
-		return new DockableTreeNode("Null", this)
-		{
-			@Override
-			public JPanel getCustomization(TreeChangedListener listener) {
-				JPanel panel = new JPanel();
-				panel.setBackground(Color.red);
-				return panel;
-			}
-		};
-	}
-
-
-	@Override
-	public EmptyDock createPanel(PanelCache cache, DockablePanel parent) {
+	protected EmptyDock createPanel(PanelCache cache, DockablePanel parent) {
 		return new EmptyDock(parent);
 	}
+	
+	
 
+
+	
+	
+	
 	@Override
-	public boolean isEmpty() {
-		return true;
+	public DockableNode addChild(DockableNode node) {
+		throw new RuntimeException("No children!");
 	}
+	
+	
 
-	@Override
-	public DockableNode reduce()
+	// ARGH, someday I will undo everything I just did
+	public EmptyNode()
 	{
-		return this;
+		this(null, -1);
 	}
-
-	@Override
-	public void replace(DockableNode child, DockableNode newChild)
-	{
-		throw new RuntimeException("Not a parent.");
-	}
-
-	@Override
-	protected void addChildrenTo(TabNode combined) {}
 }

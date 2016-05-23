@@ -6,6 +6,7 @@ import java.util.LinkedList;
 
 import javax.swing.JComponent;
 
+import dockable.app.DELETE_ME;
 import dockable.app.PanelCache;
 import dockable.app.Utils;
 import dockable.intf.PanelProperties;
@@ -23,8 +24,13 @@ public class DockableComponent extends DockablePanel {
 		this.component = component;
 	}
 
+
 	@Override
-	public void cache(PanelCache registry) {
+	void setTree(PanelCache cache, DockableNode node) {}
+
+	@Override
+	public void dump(PanelCache registry) {
+		registry.register(this);
 		registry.register(props, component);
 	}
 
@@ -48,13 +54,9 @@ public class DockableComponent extends DockablePanel {
 	}
 
 	@Override
-	public void release() {}
-
-	@Override
-	public LeafNode toTree(DockableNode parent)
+	public LeafNode toTree()
 	{
-		LeafNode returnValue = new LeafNode(props/*.duplicate()*/, parent);
-		return returnValue;
+		return DELETE_ME.createPanel(panelId, props);
 	}
 
 	@Override
@@ -64,6 +66,13 @@ public class DockableComponent extends DockablePanel {
 
 	@Override
 	public void remove(DockablePanel toRemove)
+	{
+		throw new RuntimeException("Has no children!");
+	}
+
+
+	@Override
+	public void replace(DockablePanel child, DockablePanel newChild)
 	{
 		throw new RuntimeException("Has no children!");
 	}

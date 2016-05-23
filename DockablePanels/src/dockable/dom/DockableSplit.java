@@ -3,11 +3,16 @@ package dockable.dom;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.LinkedList;
 
 import javax.swing.JComponent;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 
+import dockable.app.DELETE_ME;
 import dockable.app.PanelCache;
 import dockable.app.Utils;
 import dockable.tree.DockableNode;
@@ -16,32 +21,48 @@ import dockable.tree.SplitNode;
 
 public class DockableSplit extends DockablePanel
 {
-	private DockableNode node; // Don't need this...
 	private JSplitPane pane;
 	
 	private DockablePanel left;
 	private DockablePanel right;
 	
-	public DockableSplit(PanelCache cache, DockablePanel parent, SplitNode node)
+	public DockableSplit(DockablePanel parent)
 	{
 		super(parent);
-		this.node = node;
+
+		pane = new JSplitPane();
 		
-		pane = new JSplitPane(node.getLeftRight() ? JSplitPane.HORIZONTAL_SPLIT : JSplitPane.VERTICAL_SPLIT);
-		pane.setDividerLocation(node.getDividerLocation());
+		// left and right are null?
 		
-		left  = node.getLeft().createPanel(cache, this);
-		right = node.getRight().createPanel(cache, this);
-		
-		pane.setLeftComponent(left.getComponent());
-		pane.setRightComponent(right.getComponent());
+		createPopups();
 	}
 
 	@Override
-	public void cache(PanelCache registry)
+	void setTree(PanelCache cache, DockableNode tree)
 	{
-		left.cache(registry);
-		right.cache(registry);
+		if (!(tree instanceof SplitNode))
+			throw new RuntimeException("Better not happen.");
+		SplitNode s = (SplitNode) tree;
+
+		pane.setOrientation(s.getLeftRight() ? JSplitPane.HORIZONTAL_SPLIT : JSplitPane.VERTICAL_SPLIT);
+		pane.setDividerLocation(s.getDividerLocation());
+		
+		left  = s.getLeft().getOrCreatePanel(cache, this);
+		right = s.getRight().getOrCreatePanel(cache, this);
+		
+		pane.setLeftComponent(left.getComponent());
+		pane.setRightComponent(right.getComponent());
+		
+		left.setTree(cache, s.getLeft());
+		right.setTree(cache, s.getRight());
+	}
+	
+	@Override
+	public void dump(PanelCache registry)
+	{
+		registry.register(this);
+		left.dump(registry);
+		right.dump(registry);
 	}
 
 	@Override
@@ -66,21 +87,14 @@ public class DockableSplit extends DockablePanel
 	}
 
 	@Override
-	public void release() {
-		left.release();
-		right.release();
-		pane.removeAll();
-	}
-
-	@Override
-	public SplitNode toTree(DockableNode parent)
+	public SplitNode toTree()
 	{
-		SplitNode returnValue = new SplitNode(parent);
-		returnValue.setDivider(pane.getDividerLocation());
-		returnValue.setLeftRight(pane.getOrientation() == JSplitPane.HORIZONTAL_SPLIT);
-		returnValue.setLeft(left.toTree(returnValue));
-		returnValue.setRight(right.toTree(returnValue));
-		return returnValue;
+		return DELETE_ME.createSplit(
+				panelId,
+				left.toTree(),
+				right.toTree(),
+				pane.getDividerLocation(),
+				pane.getOrientation() == JSplitPane.HORIZONTAL_SPLIT);
 	}
 
 	@Override
@@ -103,5 +117,185 @@ public class DockableSplit extends DockablePanel
 			right = new EmptyDock(this);
 			pane.setLeftComponent(right.getComponent());
 		}
+	}
+	
+
+	private void setLeft(DockablePanel left)
+	{
+		this.left = left;
+		pane.setLeftComponent(left.getComponent());
+		createPopups();
+	}
+	private void setRight(DockablePanel left)
+	{
+		this.right = left;
+		pane.setRightComponent(left.getComponent());
+		createPopups();
+	}
+	
+	
+	
+	
+	
+
+	private void createPopups()
+	{
+		JPopupMenu menu = new JPopupMenu();
+		JMenuItem item;
+		DockableSplit s = this;
+		
+		
+
+		item = new JMenuItem("Left: Split bottom");
+		item.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				setLeft(wrap(s, left, false, true, left.getComponent().getHeight() / 2));
+			}});
+		menu.add(item);
+		
+		item = new JMenuItem("Left: Split top");
+		item.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				setLeft(wrap(s, left, false, false, left.getComponent().getHeight() / 2));
+			}});
+		menu.add(item);
+
+		item = new JMenuItem("Left: Split right");
+		item.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				setLeft(wrap(s, left, true, true, left.getComponent().getWidth() / 2));
+			}});
+		menu.add(item);
+		
+
+		item = new JMenuItem("Left: Split left");
+		item.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				setLeft(wrap(s, left, true, false, left.getComponent().getWidth() / 2));
+			}});
+		menu.add(item);
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+
+		item = new JMenuItem("Right: Split bottom");
+		item.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				setRight(wrap(s, right, false, true, right.getComponent().getHeight() / 2));
+			}});
+		menu.add(item);
+		
+		item = new JMenuItem("Right: Split top");
+		item.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				setRight(wrap(s, right, false, false, right.getComponent().getHeight() / 2));
+			}});
+		menu.add(item);
+
+		item = new JMenuItem("Right: Split right");
+		item.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				setRight(wrap(s, right, true, true, right.getComponent().getWidth() / 2));
+			}});
+		menu.add(item);
+		
+
+		item = new JMenuItem("Right: Split left");
+		item.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				setRight(wrap(s, right, true, false, right.getComponent().getWidth() / 2));
+			}});
+		menu.add(item);
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+
+		if (!(right instanceof DockableTab))
+		{
+		item = new JMenuItem("Tabulate left");
+		item.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				setLeft(wrap(s, left));
+			}
+		});
+		menu.add(item);
+		}
+
+		if (!(right instanceof DockableTab))
+		{
+		item = new JMenuItem("Tabulate right");
+		item.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				setRight(wrap(s, right));
+			}
+		});
+		menu.add(item);
+		}
+		
+		pane.setComponentPopupMenu(menu);
+	}
+
+	@Override
+	public void replace(DockablePanel child, DockablePanel newChild)
+	{
+		if (child == left)
+			setLeft(newChild);
+		else if (child == right)
+			setRight(newChild);
+		else
+			throw new RuntimeException("Child not found");
 	}
 }

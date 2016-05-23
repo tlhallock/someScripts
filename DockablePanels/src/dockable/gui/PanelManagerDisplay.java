@@ -11,8 +11,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeSelectionModel;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import dockable.app.DockableApplication;
 import dockable.app.Writer;
 import dockable.tree.DockableNode;
@@ -23,6 +21,7 @@ import dockable.tree.DockableTreeNode;
  * and open the template in the editor.
  */
 import dockable.tree.RootNode;
+import dockable.tree.TreeCreator;
 
 
 /**
@@ -31,11 +30,11 @@ import dockable.tree.RootNode;
  */
 public class PanelManagerDisplay extends javax.swing.JFrame {
 
-    DefaultMutableTreeNode root;
-    DockableApplication app;
-    RootNode currentRoot;
+    private DefaultMutableTreeNode root;
+    private DockableApplication app;
+    private RootNode currentRoot;
     
-    String lastDirectory = "./";
+    private String lastDirectory = "./";
     
     
     final JPanel nullPanel1 = new JPanel();
@@ -251,9 +250,8 @@ public class PanelManagerDisplay extends javax.swing.JFrame {
         chooser.setCurrentDirectory(new File(lastDirectory));
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             try {
-            	JsonNode node = Writer.writer.read(chooser.getSelectedFile());
             	lastDirectory = chooser.getSelectedFile().getParent();
-            	display(new RootNode(node));
+            	display(TreeCreator.read(chooser.getSelectedFile()));
             } catch (Exception ex) {
                 ex.printStackTrace();
             }

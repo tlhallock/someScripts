@@ -35,7 +35,7 @@ public class SplitingOptions extends javax.swing.JPanel {
         sT.setEnabled(node.splitable());
         sB.setEnabled(node.splitable());
         aT.setEnabled(node.tabable());
-        c.setEnabled(node.collapseable());
+        c.setEnabled(node.getParent().collapseable());
     }
 
     @SuppressWarnings("unchecked")

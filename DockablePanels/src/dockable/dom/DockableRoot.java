@@ -6,6 +6,7 @@ import java.util.LinkedList;
 
 import javax.swing.JComponent;
 
+import dockable.app.DELETE_ME;
 import dockable.app.DockableApplication;
 import dockable.app.PanelCache;
 import dockable.tree.DockableNode;
@@ -15,13 +16,23 @@ public class DockableRoot extends DockablePanel {
 
 	private DockableApplication application;
 	private LinkedList<DockablePanel> windows = new LinkedList<>();
-	
-	public DockableRoot(PanelCache cache, RootNode node, DockableApplication app) {
+
+	public DockableRoot(DockableApplication app) {
 		super(null);
 		this.application = app;
-
-		for (DockableNode child : node.getWindows())
-			windows.add(child.createPanel(cache, this));
+	}
+	
+	public void setTree(PanelCache cache, DockableNode node)
+	{
+		if (!(node instanceof RootNode))
+			throw new RuntimeException("Better not happen.");
+		
+		for (DockableNode child : node.getChildren())
+		{
+			DockablePanel orCreatePanel = child.getOrCreatePanel(cache, this);
+			windows.add(orCreatePanel);
+			orCreatePanel.setTree(cache, child);
+		}
 	}
 	
 	public void addWindow(DockablePanel window)
@@ -38,9 +49,9 @@ public class DockableRoot extends DockablePanel {
 	}
 
 	@Override
-	public void cache(PanelCache registry) {
+	public void dump(PanelCache registry) {
 		for (DockablePanel panel : windows)
-			panel.cache(registry);
+			panel.dump(registry);
 	}
 
 	@Override
@@ -68,17 +79,10 @@ public class DockableRoot extends DockablePanel {
 	}
 
 	@Override
-	public void release() {
-		for (DockablePanel panel : windows)
-			panel.release();
-	}
-
-	@Override
-	public RootNode toTree(DockableNode parent) {
-		RootNode returnValue = new RootNode();
-		for (DockablePanel panel : windows)
-			returnValue.addChild(panel.toTree(returnValue));
-		return returnValue;
+	public RootNode toTree() {
+		LinkedList<DockableNode> frames = new LinkedList<DockableNode>();
+		windows.stream().forEach(x -> frames.add(x.toTree()));
+		return DELETE_ME.createRootNode(frames);
 	}
 
 	@Override
@@ -90,5 +94,13 @@ public class DockableRoot extends DockablePanel {
 	public void remove(DockablePanel toRemove)
 	{
 		throw new RuntimeException("Why are we doing this?");
+	}
+
+	@Override
+	public void replace(DockablePanel child, DockablePanel newChild)
+	{
+		LinkedList<DockablePanel> clone = (LinkedList<DockablePanel>)windows.clone();
+		windows.clear();
+		clone.stream().forEach(x -> windows.add(x == child ? newChild : x));
 	}
 }

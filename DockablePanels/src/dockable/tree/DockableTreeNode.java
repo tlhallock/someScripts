@@ -5,19 +5,24 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import dockable.gui.TreeChangedListener;
 
-public abstract class DockableTreeNode extends DefaultMutableTreeNode {
-	
+public final class DockableTreeNode extends DefaultMutableTreeNode
+{
+
 	private DockableNode origin;
 
-	public DockableTreeNode(String name, DockableNode origin)
+	DockableTreeNode(String name, DockableNode origin)
 	{
 		super(name);
 		this.origin = origin;
 	}
 
-    public abstract JPanel getCustomization(TreeChangedListener listener);
+	public JPanel getCustomization(TreeChangedListener listener)
+	{
+		return origin.getCustomization(listener);
+	}
 
-    public DockableNode getPanel() {
-        return origin;
-    }
+	public DockableNode getPanel()
+	{
+		return origin;
+	}
 }

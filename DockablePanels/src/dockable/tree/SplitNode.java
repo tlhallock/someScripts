@@ -16,163 +16,192 @@ import dockable.gui.TreeChangedListener;
 
 public class SplitNode extends DockableNode
 {
+	
+	private static final int LEFT_NODE = 0;
+	private static final int RIGHT_NODE = 1;
+	
 	private String type = NodeTypes.SPLIT;
 	
 	private int dividerLocation = -1;
 	private boolean horizontal = true;
 	
-	private DockableNode left;
-	private DockableNode right;
-	
-	public SplitNode(DockableNode parent)
+	public SplitNode(DockableNode parent, int id)
 	{
-		super(parent);
+		super(parent, id, NodeTypes.SPLIT);
 		
-		left = new EmptyNode(this);
-		right = new EmptyNode(this);
+		children.add(LEFT_NODE,  new EmptyNode(this, -1)); // left
+		children.add(RIGHT_NODE, new EmptyNode(this, -1));
 	}
 
-	public SplitNode(JsonNode node, DockableNode parent)
+	SplitNode(JsonNode node, DockableNode parent)
 	{
-		super(parent);
-		
+		super(node, parent, NodeTypes.SPLIT);
 		dividerLocation = node.get("dividerLocation").asInt();
 		horizontal = node.get("horizontal").asBoolean();
-		left = NodeTypes.read(node.get("left"), this);
-		right = NodeTypes.read(node.get("right"), this);
 	}
+	
 
-	public void setLeft(DockableNode leftNode) {
-		
-		if (left.equals(leftNode))
-		{
-			return;
-		}
-		
-		leftNode.setParent(this);
-		left = leftNode;
-	}
-
-	public void setRight(DockableNode rightNode) {
-		
-		if (right.equals(rightNode))
-		{
-			return;
-		}
-
-		rightNode.setParent(this);
-		right = rightNode;
-	}
-
-	@Override
-	public SplitNode duplicate(DockableNode parent)
-	{
-		SplitNode returnValue = new SplitNode(parent);
-		returnValue.dividerLocation = dividerLocation;
-		returnValue.horizontal = horizontal;
-		
-		returnValue.left = left.duplicate(this);
-		returnValue.right = right.duplicate(this);
-		
-		return returnValue;
-	}
-
-
-	public DockableNode getLeft() {
-		return left;
-	}
-
-
-	public DockableNode getRight() {
-		return right;
-	}
 
 	public int getDividerLocation() {
 		return dividerLocation;
-	}
-
-	@Override
-	public DockableTreeNode createJTree() {
-            SplitNode t = this;
-		DockableTreeNode defaultMutableTreeNode = new DockableTreeNode("Divider", this)
-		{
-			@Override
-			public JPanel getCustomization(TreeChangedListener listener) {
-				SplitOptions panel = new SplitOptions(t, listener);
-				return panel;
-			}
-		};
-                
-		defaultMutableTreeNode.add(left.createJTree());
-		defaultMutableTreeNode.add(right.createJTree());
-		
-		return defaultMutableTreeNode;
-	}
-
-	@Override
-	public DockableSplit createPanel(PanelCache cache, DockablePanel parent) {
-		return new DockableSplit(cache, parent, this);
 	}
 
 	public void setDivider(int i) {
 		this.dividerLocation = i;
 	}
 
+	public void setLeftRight(boolean b)
+	{
+		horizontal = b;
+	}
+
+	public boolean getLeftRight()
+	{
+		return horizontal;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+	public void setLeft(DockableNode leftNode) {
+		
+		if (children.get(LEFT_NODE).equals(leftNode))
+			return;
+
+		if (leftNode == null)
+			leftNode = new EmptyNode(this, -1);
+		
+		leftNode.setParent(this);
+		children.set(LEFT_NODE, leftNode);
+	}
+
+	public void setRight(DockableNode rightNode) {
+
+		if (children.get(RIGHT_NODE).equals(rightNode))
+			return;
+		
+		if (rightNode == null)
+			rightNode = new EmptyNode(this, -1);
+		
+		rightNode.setParent(this);
+		children.set(RIGHT_NODE, rightNode);
+	}
+
+
+	public DockableNode getLeft() {
+		return children.get(LEFT_NODE);
+	}
+
+
+	public DockableNode getRight() {
+		return children.get(RIGHT_NODE);
+	}
+
+	public DockableNode addChild(DockableNode node) {
+		throw new RuntimeException("Please call setLeft or setRight!");
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
 	@Override
-	public boolean isEmpty() {
-		return left.isEmpty() && right.isEmpty();
+	public SplitNode duplicateSpecifics()
+	{
+		SplitNode returnValue = new SplitNode(parent, id);
+		returnValue.dividerLocation = dividerLocation;
+		returnValue.horizontal = horizontal;
+		return returnValue;
+	}
+
+	@Override
+	public JPanel getCustomization(TreeChangedListener listener)
+	{
+		SplitOptions panel = new SplitOptions(this, listener);
+		return panel;
+	}
+
+	@Override
+	protected DockableSplit createPanel(PanelCache cache, DockablePanel parent) {
+		return new DockableSplit(parent);
 	}
 
 	@Override
 	public DockableNode reduce()
 	{
-		left = left.reduce();
-		left.setParent(this);
-		right = right.reduce();
-		right.setParent(this);
-		
-		if (left instanceof EmptyNode)
+		children.set(LEFT_NODE, children.get(LEFT_NODE).reduce());
+		children.set(LEFT_NODE, children.get(LEFT_NODE).reduce());
+		setParents();
+
+		if (children.get(LEFT_NODE) instanceof EmptyNode)
 		{
-			return right;
+			return children.get(RIGHT_NODE);
 		}
-		if (right instanceof EmptyNode)
+		if (children.get(RIGHT_NODE) instanceof EmptyNode)
 		{
-			return left;
+			return children.get(LEFT_NODE);
 		}
-		
+
 		return this;
 	}
-
-    public void setLeftRight(boolean b)
-    {
-        horizontal = b;
-    }
-
-    public boolean getLeftRight() {
-        return horizontal;
-    }
-
-	@Override
-	public void replace(DockableNode child, DockableNode newChild)
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	public TabNode toTabs()
 	{
-		if (left == child)
-		{
-			setLeft(newChild);
-		}
-		else if (right == child)
-		{
-			setRight(newChild);
-		}
-		else
-		{
-			throw new RuntimeException("Not a child.");
-		}
+		TabNode tab = new TabNode(getParent(), -1);
+	        tab.addChild(getLeft());
+	        tab.addChild(getRight());
+	        getParent().replace(this, tab);
+	        return tab;
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
-	@Override
-	protected void addChildrenTo(TabNode combined)
+	// ARGH, someday I will undo everything I just did
+	public SplitNode()
 	{
-		combined.addChild(left);
-		combined.addChild(right);
+		this(null, -1);
 	}
 }
