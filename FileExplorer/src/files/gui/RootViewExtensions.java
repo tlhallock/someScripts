@@ -30,7 +30,7 @@ import files.util.ComponentShowingListener;
  *
  * @author thallock
  */
-public class ExtensionViewer extends javax.swing.JPanel implements ExtensionsListener {
+public class RootViewExtensions extends javax.swing.JPanel implements ExtensionsListener {
 
 	DefaultListModel<FileType> list = new DefaultListModel<FileType>();
 	FileType currentlyViewing;
@@ -38,12 +38,12 @@ public class ExtensionViewer extends javax.swing.JPanel implements ExtensionsLis
     /**
      * Creates new form ExtensionViewer
      */
-    public ExtensionViewer() {
+    public RootViewExtensions() {
         initComponents();
         
         createPopupMenu();
         
-        ExtensionViewer t = this;
+        RootViewExtensions t = this;
         new ComponentShowingListener(this) {
 			@Override
 			protected void isShowing() {
@@ -209,16 +209,14 @@ public class ExtensionViewer extends javax.swing.JPanel implements ExtensionsLis
         jLabel1.setText("Run");
 
         jTextField1.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jTextField1ActionPerformed(evt);
             }
         });
 
         jButton1.setText("Change...");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
@@ -231,24 +229,21 @@ public class ExtensionViewer extends javax.swing.JPanel implements ExtensionsLis
 
         jButton3.setText("Update");
         jButton3.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton3ActionPerformed(evt);
             }
         });
 
         nameField.setText("jTextField2");
         nameField.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 nameFieldActionPerformed(evt);
             }
         });
 
         jButton4.setText("Update");
         jButton4.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton4ActionPerformed(evt);
             }
         });
@@ -314,8 +309,7 @@ public class ExtensionViewer extends javax.swing.JPanel implements ExtensionsLis
 
         jButton2.setText("Update");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
             }
         });

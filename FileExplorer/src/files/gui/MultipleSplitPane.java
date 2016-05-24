@@ -325,20 +325,6 @@ public class MultipleSplitPane extends JPanel implements ComponentListener
 
 
 
-//
-//    @Override
-//	public int getWidth()
-//    {
-//    	return currentWidth;
-//    }
-//    
-//    @Override
-//	public Dimension getPreferredSize()
-//    {
-//    	Dimension preferredSize = super.getPreferredSize();
-//    	return new Dimension(currentWidth, preferredSize.height);
-//    }
-
 
 	private int getHeightFromEvent(ComponentEvent e) {
 		JComponent jComponent = (JComponent)e.getSource();
@@ -366,7 +352,6 @@ public class MultipleSplitPane extends JPanel implements ComponentListener
 	}
 
 	private void adjustBounds(int h) {
-		System.out.println("h=" + h);
 		for (EntryNode node : components)
 			node.component.setBounds(node.currentStart, 0, node.width, h);
 		Dimension newSize = new Dimension(currentWidth, getHeight());

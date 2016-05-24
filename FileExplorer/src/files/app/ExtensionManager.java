@@ -222,7 +222,7 @@ public final class ExtensionManager {
 				return loadHumanReadable(path);
 			} catch (IOException e2) {
 				Application.getApplication().getLogger().log(LogLevel.Minimal, "Unable to read extensions file", e2);
-				return null;
+				return new ExtensionManager();
 			}
 		}
 	}
@@ -244,83 +244,88 @@ public final class ExtensionManager {
 	
 	
 	
+	public static final class FileType implements Comparable<FileType>
+	{
+		private String name;
+		private LinkedList<String> launchArguments = new LinkedList<>();
+		private TreeSet<String> extenions = new TreeSet<>();
 
+		public FileType(String name)
+		{
+			this.name = name;
+		}
 
-    public static final class FileType implements Comparable<FileType>
-    {
-        private String name;
-        private LinkedList<String> launchArguments = new LinkedList<>();
-        private TreeSet<String> extenions = new TreeSet<>();
-        
-        public FileType(String name)
-        {
-        	this.name = name;
-        }
-        
-        private FileType() {}
-        
-        public void setExtension(Collection<String> exts) {
-        	extenions.clear();
-        	for (String ext : exts)
-        	{
-        		extenions.add(ext.toLowerCase().trim());
-        	}
+		private FileType()
+		{
+		}
+
+		public void setExtension(Collection<String> exts)
+		{
+			extenions.clear();
+			for (String ext : exts)
+			{
+				extenions.add(ext.toLowerCase().trim());
+			}
 		}
 
 		@Override
 		public boolean equals(Object other)
-        {
-        	if (!(other instanceof FileType))
-        		return false;
-        	FileType o = (FileType) other;
-        	return o.name.equals(name);
-        }
-        
-        @Override
-		public int hashCode()
-        {
-        	return name.hashCode();
-        }
-        
-        @Override
-		public String toString()
-        {
-        	return name;
-        }
+		{
+			if (!(other instanceof FileType))
+				return false;
+			FileType o = (FileType) other;
+			return o.name.equals(name);
+		}
 
-		public Collection<String> getExtensions() {
+		@Override
+		public int hashCode()
+		{
+			return name.hashCode();
+		}
+
+		@Override
+		public String toString()
+		{
+			return name;
+		}
+
+		public Collection<String> getExtensions()
+		{
 			LinkedList<String> sorted = new LinkedList<>();
 			sorted.addAll(extenions);
 			Collections.sort(sorted);
 			return sorted;
 		}
 
-		public String getName() {
+		public String getName()
+		{
 			return name;
 		}
 
-		public Collection<String> getCommands() {
+		public Collection<String> getCommands()
+		{
 			return launchArguments;
 		}
-
 		
+		public void setName(String text)
+		{
+			name = text;
+			Application.getApplication().getKnownFileTypes().typesChanged();
+		}
 
-        public void setName(String text) {
-        	name = text;
-            Application.getApplication().getKnownFileTypes().typesChanged();
-        }
-		
-        public void setCommands(String text) {
-            launchArguments.clear();
-            launchArguments.add(text);
-            Application.getApplication().getKnownFileTypes().typesChanged();
-        }
+		public void setCommands(String text)
+		{
+			launchArguments.clear();
+			launchArguments.add(text);
+			Application.getApplication().getKnownFileTypes().typesChanged();
+		}
 
 		@Override
-		public int compareTo(FileType o) {
+		public int compareTo(FileType o)
+		{
 			return name.compareTo(o.name);
 		}
-    }
+	}
 	
 	
 	

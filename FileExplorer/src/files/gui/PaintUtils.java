@@ -58,7 +58,9 @@ public class PaintUtils
 	}
 
 	static int getWidth(Graphics2D g, String text) {
+		int fontSize = Application.getApplication().getSettings().getFontSize();
 		AttributedString string = new AttributedString(text);
+		string.addAttribute(TextAttribute.SIZE, fontSize);
 		TextLayout textLayout = new TextLayout(string.getIterator(), g.getFontRenderContext());
 		Rectangle2D bounds = textLayout.getBounds();
 		return (int) Math.ceil(bounds.getWidth());

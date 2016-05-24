@@ -22,7 +22,7 @@ import javax.swing.JPopupMenu;
 import files.app.Application;
 import files.model.FileEntryAttributes.FileEntryAttributeKey;
 
-public class DetailsHeaderView extends JPanel implements MouseListener, MouseMotionListener
+public class FileViewHeader extends JPanel implements MouseListener, MouseMotionListener
 {
 	private int radius = 10;
 	private Columns columns;
@@ -32,46 +32,66 @@ public class DetailsHeaderView extends JPanel implements MouseListener, MouseMot
 	
 	private boolean inited;
 	private ColumnManager painter;
+
+	private int[] currentWidths = new int[FileEntryAttributeKey.values().length];
 	
-	private boolean userModified;
+	private SpacingPolicy policy;
 	
 	private Column sortedIdx = null;
 	private boolean sortedReverse = false;
     
-    boolean highlighted;
+	private boolean highlighted;
+	
+	private int entryW = -1;
+        
+        private boolean showNameFirst;
+        private boolean fixedColumns;
 	
 	private final JMenuItem equallySpaceMenuItem = new JMenuItem("Equally Space");
 	{
 		equallySpaceMenuItem.addActionListener(new ActionListener() {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			columns.equallySpace();
-			userModified = true;
+			policy = SpacingPolicy.EQUAL;
+			policy.apply(columns);
+			painter.repaint();
+		}});
+	}
+	private final JMenuItem minimumSpaceMenuItem = new JMenuItem("Minimally Space");
+	{
+		minimumSpaceMenuItem.addActionListener(new ActionListener() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			policy = SpacingPolicy.MINIMAL;
+			policy.apply(columns);
 			painter.repaint();
 		}});
 	}
 	
-	public DetailsHeaderView(ColumnManager painter)
+	public FileViewHeader(ColumnManager painter, boolean showNameFirst, boolean fixedColumns)
 	{
-		this.painter = painter;
-		this.columns = this.new Columns();
+            this.showNameFirst = showNameFirst;
+            this.fixedColumns = fixedColumns;
+            this.painter = painter;
+            this.columns = this.new Columns();
+            
+            policy = fixedColumns ? SpacingPolicy.EQUAL : Application.getApplication().getSettings().getDefaultSpacingPolicy();
 		
 		addMouseListener(this);
-		addMouseMotionListener(this);
+                if (!fixedColumns)
+                    addMouseMotionListener(this);
 		
 		addComponentListener(new ComponentListener() {
 			
 			@Override
 			public void componentShown(ComponentEvent e) {
-				if (userModified) return;
-				columns.equallySpace();
+				policy.apply(columns);
 				painter.repaint();
 			}
 			
 			@Override
 			public void componentResized(ComponentEvent e) {
-				if (userModified) return;
-				columns.equallySpace();
+				policy.apply(columns);
 				painter.repaint();
 			}
 			
@@ -83,14 +103,27 @@ public class DetailsHeaderView extends JPanel implements MouseListener, MouseMot
 		
 		setPopup();
 	}
+	
+	void setEntryWidth(int w)
+	{
+		entryW = w;
+		policy.apply(columns);
+	}
+	private int getEntryWidth()
+	{
+		if (entryW < 0)
+			return getWidth();
+		else
+			return entryW;
+	}
 
-    void setFolderHighlighted(boolean val)
-    {
-    	boolean changed = highlighted != val;
-    	this.highlighted = val;
+	void setFolderHighlighted(boolean val)
+	{
+		boolean changed = highlighted != val;
+		this.highlighted = val;
 		if (changed)
-    		painter.repaint();
-    }
+			painter.repaint();
+	}
 	
 	private Column getColumn(FileEntryAttributeKey key)
 	{
@@ -102,20 +135,20 @@ public class DetailsHeaderView extends JPanel implements MouseListener, MouseMot
 	
 	private void toggle(FileEntryAttributeKey key)
 	{
-		userModified = false;
 		Column c = getColumn(key);
 		if (c != null)
 		{
 			columns.remove(c);
 			columns.order();
-			columns.equallySpace();
 		}
 		else
 		{
 			columns.add(new Column(Integer.MAX_VALUE, key));
-			columns.equallySpace();
 		}
-
+		
+		if (policy == SpacingPolicy.USER_MODIFIED)
+			policy = Application.getApplication().getSettings().getDefaultSpacingPolicy();
+		policy.apply(columns);
 		painter.repaint();
 		setPopup();
 	}
@@ -130,8 +163,10 @@ public class DetailsHeaderView extends JPanel implements MouseListener, MouseMot
 	private void setPopup()
 	{
 		JPopupMenu popup = new JPopupMenu();
-		
+		if (!fixedColumns)
 		popup.add(equallySpaceMenuItem);
+                if (!fixedColumns)
+		popup.add(minimumSpaceMenuItem);
 		
 		// Could make this an option...
 		LinkedList<FileEntryAttributeKey> sortedList = new LinkedList<>();
@@ -142,6 +177,9 @@ public class DetailsHeaderView extends JPanel implements MouseListener, MouseMot
 		
 		for (FileEntryAttributeKey key : sortedList)
 		{
+                    if (!showNameFirst && key.equals(FileEntryAttributeKey.All_Name))
+                        continue;
+                        
 			JCheckBoxMenuItem menuItem = new JCheckBoxMenuItem(key.getDisplay());
 			menuItem.setSelected(getColumn(key) != null);
 			menuItem.addActionListener(e -> toggle(key));
@@ -155,8 +193,10 @@ public class DetailsHeaderView extends JPanel implements MouseListener, MouseMot
 	{
 		columns.add(column);
 		setPopup();
-		if (!userModified)
-			columns.equallySpace();
+                if (policy == SpacingPolicy.USER_MODIFIED)
+                    policy = Application.getApplication().getSettings().getDefaultSpacingPolicy();
+                policy.apply(columns);
+		painter.repaint();
 	}
 
 	// should be private
@@ -172,12 +212,6 @@ public class DetailsHeaderView extends JPanel implements MouseListener, MouseMot
 		Graphics2D g = (Graphics2D) graphics;
 		
 		boolean cutColumns = Application.getApplication().getSettings().cutColumns();
-//		if (!cutColumns)
-//			for (Column c : columns)
-//				if (c.nameWidth < 0)
-//					c.nameWidth = PaintUtils.getWidth(g, c.key.name());
-		
-		
 		
 		g.setColor(Application.getApplication().getColorSelector().getColumnHeaderBackgroundColor(highlighted));
 		g.fillRect(0, 0, getWidth(), getHeight());
@@ -235,13 +269,13 @@ public class DetailsHeaderView extends JPanel implements MouseListener, MouseMot
 			Column column = columns.get(i);
 			
 
-			int xEnd = i == columns.size() - 1? getWidth() : columns.get(i+1).start;
+			int xEnd = i == columns.size() - 1? getEntryWidth() : columns.get(i+1).start;
 			int xBegin = column.start;
 			String text = column.key.getDisplay();
 			
 			int width = PaintUtils.paintString(g, text, xBegin, xEnd, getHeight(), cutColumns, cutColumns, true);
 			column.visible = !cutColumns || width > xEnd - xBegin;
-			column.nameWidth = width;
+			column.nameWidth = width + 2 * radius;
 		}
 		
 		if (dragging != null)
@@ -277,7 +311,7 @@ public class DetailsHeaderView extends JPanel implements MouseListener, MouseMot
 	@Override
 	public void mouseDragged(MouseEvent e)
 	{
-		userModified = true;
+		policy = SpacingPolicy.USER_MODIFIED;
 		if (dragging != null)
 			draggingX = e.getX();
 		
@@ -338,6 +372,7 @@ public class DetailsHeaderView extends JPanel implements MouseListener, MouseMot
 	@Override
 	public void mousePressed(MouseEvent e)
 	{
+            if (!fixedColumns)
 		dragging = getColumn(e.getX(), e.getY());
 	}
 
@@ -347,10 +382,10 @@ public class DetailsHeaderView extends JPanel implements MouseListener, MouseMot
 			return;
 		
 		int newStart = e.getX();
-		newStart = 
 		dragging.start = newStart;
 		
 		columns.order();
+		policy.apply(columns);
 		painter.repaint();
 		
 		dragging = null;
@@ -410,6 +445,10 @@ public class DetailsHeaderView extends JPanel implements MouseListener, MouseMot
 		public int compareTo(Column o) {
 			return Integer.compare(start, o.start);
 		}
+		public FileEntryAttributeKey getKey()
+		{
+			return key;
+		}
 	}
 	
 	public class Columns extends ArrayList<Column>
@@ -417,6 +456,23 @@ public class DetailsHeaderView extends JPanel implements MouseListener, MouseMot
 		private void order()
 		{
 			Collections.sort(this);
+                        if (showNameFirst && !get(0).key.equals(FileEntryAttributeKey.All_Name))
+                        {
+                            Column c = null;
+                            for (Column column : this)
+                                if (column.key.equals(FileEntryAttributeKey.All_Name))
+                                {
+                                    c = column;
+                                    break;
+                                }
+                            if (c == null)
+                            {
+                                throw new RuntimeException("Name column not found!");
+                            }
+                            remove(c);
+                            add(0, c);
+                                    
+                        }
 			if (!isEmpty())
 				get(0).start = 0;
 			
@@ -426,25 +482,79 @@ public class DetailsHeaderView extends JPanel implements MouseListener, MouseMot
 			for (Column column : this)
 			{
 				if (cutColumns && prev != null && prev.nameWidth > 0)
-					column.start = Math.max((int) Math.ceil(prev.start + prev.nameWidth + 2 * radius), column.start);
-				column.start = Math.max(0, Math.min(getWidth(), column.start));
+					column.start = Math.max((int) Math.ceil(prev.start + prev.nameWidth + radius), column.start);
+				column.start = Math.max(0, Math.min(getEntryWidth(), column.start));
 				prev = column;
 			}
 		}
 		
+		public void minimalSpace()
+		{
+			int[] starts = new int[size()];
+			
+			boolean notFilled = false;
+			int current = 0;
+			for (int i=0;i<size() && !notFilled;i++)
+			{
+				int desiredWidth = Math.max(painter.getDesiredWidth(get(i).key), (int) Math.ceil(get(i).nameWidth));
+				
+				starts[i] = current;
+				current += desiredWidth;
+				if (desiredWidth < 0)
+					notFilled = true;
+			}
+			
+			if (notFilled)
+			{
+				equallySpace();
+				return;
+			}
+			
+			int diff = Math.max(0, getEntryWidth() - current);
+			for (int i = 1; i < size(); i++)
+			{
+				get(i).start = starts[i] + diff;
+			}
+		}
+
 		public void equallySpace()
 		{
-			int width = getWidth();
+			int width = getEntryWidth();
 			
 			int size = size();
-			for (int i=0;i<size;i++)
+			for (int i = 0; i < size; i++)
 				get(i).start = (int) (i * width / (double) size);
 		}
 	}
+
+	public enum SpacingPolicy
+	{
+		EQUAL,
+		MINIMAL,
+		USER_MODIFIED,
+		
+		; 
+		
+		void apply(Columns columns)
+		{
+			switch (this)
+			{
+			case EQUAL:
+				columns.equallySpace();
+				return;
+			case MINIMAL:
+				columns.minimalSpace();
+				return;
+			case USER_MODIFIED:
+				return;
+			}
+		}
+	};
 	
 	public interface ColumnManager
 	{
 		void sort(int column, boolean reverse);
 		void repaint();
+		int getDesiredWidth(FileEntryAttributeKey key);
 	}
 }

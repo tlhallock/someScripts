@@ -159,6 +159,7 @@ public final class ColorSelector
 		ColorPropertyList list = new ColorPropertyList();
 		for (SerializableColorProperty p : ALL_COLORS)
 			list.list.add(p);
+		// Maybe sort them?
 		Serialization.writer.write(path.toFile(), list);
 	}
 	public static void save()

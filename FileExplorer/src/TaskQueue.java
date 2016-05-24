@@ -14,7 +14,7 @@ public class TaskQueue extends javax.swing.JPanel {
      * Creates new form TaskQueue
      */
     public TaskQueue() {
-        initComponents();
+        initComponents()
     }
 
     /**

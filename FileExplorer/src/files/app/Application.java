@@ -7,7 +7,7 @@ import java.awt.Rectangle;
 import javax.swing.UIManager;
 import javax.swing.plaf.FontUIResource;
 
-import files.gui.ExtensionViewer;
+import files.gui.RootViewExtensions;
 import files.util.SinglePanelFrame;
 
 
@@ -17,6 +17,7 @@ public final class Application
 	private Logger logger;
 	private ExtensionManager knownExtensions;
 	private ColorSelector selector;
+        private TemplateManager templates;
 	
 	
 	private Application() {}
@@ -35,6 +36,11 @@ public final class Application
 	public ColorSelector getColorSelector() {
 		return selector;
 	}
+
+    public TemplateManager getTemplates()
+    {
+        return templates;
+    }
 	
 	
 	
@@ -56,6 +62,7 @@ public final class Application
 		app.settings = new ExplorerSettings();
 		app.knownExtensions = ExtensionManager.load();
 		app.selector = ColorSelector.load();
+                app.templates = TemplateManager.load();
 	}
 
 	
@@ -97,9 +104,9 @@ public final class Application
 		UIManager.put("Tree.font", font);
 	}
 
-	public ExtensionViewer launchFileTypeOptions(Point p)
+	public RootViewExtensions launchFileTypeOptions(Point p)
 	{
-		ExtensionViewer folderView1 = new ExtensionViewer();
+		RootViewExtensions folderView1 = new RootViewExtensions();
 		SinglePanelFrame.showPanel(folderView1, new Rectangle(p.x + 50,p.y + 50, 1000, 1000), "viewer1");
 		return folderView1;
 	}

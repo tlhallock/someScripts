@@ -4,7 +4,7 @@ import java.awt.Rectangle;
 import java.io.IOException;
 
 import files.app.Application;
-import files.gui.ColumnView;
+import files.gui.RootViewExplorerColumns;
 import files.util.SinglePanelFrame;
 
 public class TestMultiplePanes {
@@ -13,7 +13,7 @@ public class TestMultiplePanes {
 	{
 		Application.launchApplication();
 		
-		ColumnView columnView = new ColumnView();
+		RootViewExplorerColumns columnView = new RootViewExplorerColumns();
 		
 		SinglePanelFrame.showPanel(columnView, new Rectangle(500,500,500,500), "columns");
 	}

@@ -22,13 +22,14 @@ import files.model.FileEntryAttributes.FileEntryAttributeKey;
  *
  * @author thallock
  */
-public class ColumnView extends javax.swing.JPanel {
+public class RootViewExplorerColumns extends javax.swing.JPanel {
 
 
 	private static final int NEW_FOLDER_SIZE = 500;
 	
-    MultipleSplitPane splitPane;
-    ArrayList<FileEntry> entries = new ArrayList<>();
+    private MultipleSplitPane splitPane;
+    private ArrayList<FileEntry> entries = new ArrayList<>();
+    private boolean useHorizontal = true;
     
     private static final FileEntryAttributeKey[] DEFAULT_ATTRIBUTES = new FileEntryAttributeKey[] {
 		FileEntryAttributeKey.All_Name,
@@ -38,7 +39,7 @@ public class ColumnView extends javax.swing.JPanel {
     /**
      * Creates new form ColumnView
      */
-    public ColumnView() {
+    public RootViewExplorerColumns() {
         initComponents();
         
         splitPane = (MultipleSplitPane) jPanel1;
@@ -60,8 +61,12 @@ public class ColumnView extends javax.swing.JPanel {
     	}
     }
 
+    private ListView createListView()
+    {
+        return useHorizontal ? new ListViewDetails(DEFAULT_ATTRIBUTES) : new ListViewGrid(DEFAULT_ATTRIBUTES);
+    }
 	private void addView(FileEntry entry, int index) {
-		DetailsListView view = new DetailsListView(DEFAULT_ATTRIBUTES);
+		ListView view = createListView();
 		view.show(entry.getPath());
 		view.setInteraction(new DepthInteraction(index));
 		entries.add(entries.size(), entry);
@@ -69,7 +74,7 @@ public class ColumnView extends javax.swing.JPanel {
 	}
 	
     
-    private class DepthInteraction implements FileInteraction
+    private class DepthInteraction extends FileInteractionIF.FileOpenInteraction
     {
     	private int index;
     	
@@ -79,22 +84,10 @@ public class ColumnView extends javax.swing.JPanel {
     	}
     	
 		@Override
-		public void doubleClick(FileEntry entry) {
-			Path p = entry.getPath();
-			if (Files.isRegularFile(p))
-			{
-				System.out.println("Open " + p);
-				scrollToView(index-1);
-				return;
-			}
-			
-			if (!Files.isDirectory(p))
-			{
-				return;
-			}
+		public void doubleClickDirectory(FileEntry entry) {
 			synchronized (entries)
 			{
-				((DetailsListView) splitPane.getChild(index-1)).setHighlight(entry);
+				((ListView) splitPane.getChild(index-1)).setHighlight(entry);
 				
 				if (index == entries.size())
 				{
@@ -113,7 +106,7 @@ public class ColumnView extends javax.swing.JPanel {
 				entries.set(index, entry);
 				while (entries.size() > index + 1)
 					entries.remove(entries.size() - 1);
-				((DetailsListView) splitPane.getChild(index)).show(entry.getPath());
+				((ListView) splitPane.getChild(index)).show(entry.getPath());
 				scrollToView(index);
 			}
 		}
@@ -124,7 +117,7 @@ public class ColumnView extends javax.swing.JPanel {
 
 		for (int i=0;i<splitPane.getNumberOfChildren();i++)
 		{
-			((DetailsListView) splitPane.getChild(i)).setFolderHighlighted(i == index);
+			((ListView) splitPane.getChild(i)).setFolderHighlighted(i == index);
 		}
 	}
     private void scrollToView(int index)
@@ -160,13 +153,13 @@ public class ColumnView extends javax.swing.JPanel {
                 	
                 	jTextField1.setText(parent.toString());
                 	
-                	DetailsListView view = new DetailsListView(DEFAULT_ATTRIBUTES);
+                	ListView view = createListView();
                 	view.show(parent);
                 	view.setHighlight(fileEntry);
                 	splitPane.prependChild(view);
                 	
                 	for (int i=0;i<entries.size();i++)
-                		((DetailsListView) splitPane.getChild(i)).setInteraction(new DepthInteraction(i+1));
+                		((ListView) splitPane.getChild(i)).setInteraction(new DepthInteraction(i+1));
 
 					scrollToView(0);
                 }
@@ -223,8 +216,7 @@ public class ColumnView extends javax.swing.JPanel {
 
         jTextField1.setText("jTextField1");
         jTextField1.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jTextField1ActionPerformed(evt);
             }
         });

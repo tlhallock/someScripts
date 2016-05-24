@@ -7,8 +7,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import files.app.Application;
-import files.gui.DetailsListView;
-import files.gui.FileInteraction;
+import files.gui.ListView;
+import files.gui.FileInteractionIF;
+import files.gui.ListViewDetails;
 import files.model.FileEntry;
 import files.util.SinglePanelFrame;
 
@@ -19,9 +20,9 @@ public class TestColumnHeader {
 	{
 		Application.launchApplication();
 		
-		DetailsListView folderView = new DetailsListView();
+		ListView folderView = new ListViewDetails();
 		
-		FileInteraction interaction = new FileInteraction() {
+		FileInteractionIF interaction = new FileInteractionIF() {
 			@Override
 			public void doubleClick(FileEntry entry) {
 				Path p = entry.getPath();

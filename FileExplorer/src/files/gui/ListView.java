@@ -11,8 +11,6 @@ import java.awt.event.ComponentListener;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.TreeSet;
 import java.util.stream.Stream;
@@ -21,38 +19,28 @@ import javax.swing.JPanel;
 
 import files.app.Application;
 import files.app.Logger.LogLevel;
-import files.gui.DetailsHeaderView.Column;
-import files.gui.DetailsHeaderView.ColumnManager;
+import files.gui.FileViewHeader.Column;
+import files.gui.FileViewHeader.ColumnManager;
+import files.gui.FileViewHeader.Columns;
 import files.model.FileEntry;
 import files.model.FileEntryAttributes.FileEntryAttributeKey;
-import files.model.FileEntryAttributes.FileEntryAttributeValue;
 
 /**
  *
  * @author thallock
  */
-public class DetailsListView extends javax.swing.JPanel {
+public abstract class ListView<T extends FileView> extends javax.swing.JPanel {
 
-    int height = 50;
+    protected int height = 50;
     
-    DetailsHeaderView header;
-    LinkedList<DetailsFileView> details;
-    FileInteraction interaction;
+    protected FileViewHeader header;
+    protected LinkedList<T> details;
+    protected FileInteractionIF interaction;
     
-    TreeSet<FileEntry> marked = new TreeSet<>();
-
-    public DetailsListView() {
-    	this(new FileEntryAttributeKey[] {
-    			FileEntryAttributeKey.All_Name,
-    			FileEntryAttributeKey.File_LastModified,
-    			FileEntryAttributeKey.File_LastAccessed,
-    			FileEntryAttributeKey.File_Created,
-    			FileEntryAttributeKey.File_Length,
-    	});
-    	
-    	canvas.setBackground(Application.getApplication().getColorSelector().getListBackground());
+    private TreeSet<FileEntry> marked = new TreeSet<>();
         
     	// DOESN"T WORK:
+//    	canvas.setBackground(Application.getApplication().getColorSelector().getListBackground());
 //        jTextField1.getDocument().addDocumentListener(new DocumentListener() {
 //			@Override
 //			public void insertUpdate(DocumentEvent e) {
@@ -69,13 +57,14 @@ public class DetailsListView extends javax.swing.JPanel {
 //				adjustSizes();
 //			}
 //		});
-    }
+    
+    
     /**
      * Creates new form FolderView
      */
-    public DetailsListView(FileEntryAttributeKey[] attributes) {
+    public ListView(FileEntryAttributeKey[] attributes) {
     	details = new LinkedList<>();
-        header = new DetailsHeaderView(new ColumnManager() {
+        header = new FileViewHeader(new ColumnManager() {
 			@Override
 			public void repaint() {
 				header.repaint();
@@ -84,25 +73,15 @@ public class DetailsListView extends javax.swing.JPanel {
 
 			@Override
 			public void sort(int column, boolean reverse) {
-				synchronized(details)
-				{
-					Collections.sort(details, new Comparator<DetailsFileView>(){
-						@Override
-						public int compare(DetailsFileView o1, DetailsFileView o2) {
-							FileEntryAttributeValue display1 = o1.get(column);
-							FileEntryAttributeValue display2 = o2.get(column);
-							int cmp = 0;
-							if (display1 == null)
-								cmp = display2 == null ? 0 : 1;
-							else if (display2 == null)
-								cmp = -1;
-							else
-								cmp = display1.compareTo(display2);
-							return (reverse ? -1 : 1) * cmp;
-						}});
-				}
+				sortColumns(column, reverse);
 				adjustSizes();
-			}});
+			}
+
+			@Override
+			public int getDesiredWidth(FileEntryAttributeKey key)
+			{
+				return getMinimalDesiredWidth(key);
+			}}, getShowNameFirst(), getFixedColumns());
         initComponents();
         canvas.setLayout(null);
         
@@ -128,155 +107,131 @@ public class DetailsListView extends javax.swing.JPanel {
 		};
 		jScrollPane1.addComponentListener(l);
 //		canvas.addComponentListener(l);
-    }
-    
-    public void setFolderHighlighted(boolean val)
-    {
-    	header.setFolderHighlighted(val);
-    }
-    
-    public void setInteraction(FileInteraction interaction)
-    {
-    	this.interaction = interaction;
-    	synchronized (details) {
-    		for (DetailsFileView view : details)
-    			view.setInteraction(interaction);
-		}
+		
+		adjustSizes();
     }
 
-	private static void safelyLoad(LinkedList<FileEntry> list, Path p) {
-		try {
+
+	protected int getMinimalDesiredWidth(FileEntryAttributeKey key)
+	{
+		throw new RuntimeException("Don't call me!");
+	}
+
+	public void setFolderHighlighted(boolean val)
+	{
+		header.setFolderHighlighted(val);
+	}
+
+	public void setInteraction(FileInteractionIF interaction)
+	{
+		this.interaction = interaction;
+		synchronized (details)
+		{
+			for (FileView view : details)
+				view.setInteraction(interaction);
+		}
+	}
+
+	protected static void safelyLoad(LinkedList<FileEntry> list, Path p)
+	{
+		try
+		{
 			list.add(FileEntry.load(p));
-		} catch (IOException e) {
+		} catch (IOException e)
+		{
 			Application.getApplication().getLogger().log(LogLevel.Normal, "Unable to read file: " + p, e);
 		}
 	}
-    
-    public void show(Path p)
-    {
-    	Application.getApplication().getLogger().log(LogLevel.Normal, "Showing " + p);
-    	LinkedList<FileEntry> entries = new LinkedList<>();
-    	
-    	// wtf mate
-        try (Stream<Path> list = Files.list(p);)
-        {
-        	list.forEach(x -> safelyLoad(entries, x));
-        } catch (IOException e) {
-        	Application.getApplication().getLogger().log(LogLevel.Normal, "Unable to list " + p, e);
+
+	public void show(Path p)
+	{
+		show(p, true);
+	}
+
+	protected void show(Path p, boolean remove)
+	{
+		Application.getApplication().getLogger().log(LogLevel.Normal, "Showing " + p);
+		LinkedList<FileEntry> entries = new LinkedList<>();
+
+		// wtf mate
+		try (Stream<Path> list = Files.list(p);)
+		{
+			list.forEach(x -> safelyLoad(entries, x));
 		}
-        
-        synchronized(details)
-        {
-        	canvas.removeAll();
-        	details.clear();
-        
-        	for (FileEntry entry : entries)
-        	{
-        		DetailsFileView detailView = new DetailsFileView(header.getColumns(), entry, interaction);
-        		details.add(detailView);
-        		detailView.setVisible(true);
-        	}
-        }
-        
-        adjustSizes();
-    }
-    
-    private void adjustSizes()
-    {
-		String filterText = jTextField1.getText();
-		if (!jCheckBox1.isSelected())
-			filterText = filterText.toLowerCase();
+		catch (IOException e)
+		{
+			Application.getApplication().getLogger().log(LogLevel.Normal, "Unable to list " + p, e);
+		}
 
-		int w = jScrollPane1.getViewport().getWidth();
-		int y = 0;
-		// header.setBounds(0, y, canvas.getWidth(), headerHeight);
-		// y += headerHeight;
+		synchronized (details)
+		{
+			if (remove)
+			{
+				canvas.removeAll();
+				details.clear();
+			}
 
-		boolean even = false;
-		int count = 0;
-		synchronized (details) {
-			details.stream().forEach(x -> canvas.remove(x));
-
-			for (DetailsFileView detail : details) {
-				String name = detail.getEntry().getName();
-				if (!jCheckBox1.isSelected()) name = name.toLowerCase();
-				if (filterText.length() != 0 && !name.contains(filterText))
-                        continue;
-				if (detail.getEntry().isHidden() && !jCheckBox2.isSelected())
-					continue;
-				
-				canvas.add(detail);
-				detail.setBounds(0, y, w, height);
-				detail.setEven(even = !even);
-				y += height;
-				count++;
+			for (FileEntry entry : entries)
+			{
+				T detailView = createFileView(header.getColumns(), entry, interaction);
+				details.add(detailView);
+				detailView.setVisible(true);
 			}
 		}
 
-		Dimension d = new Dimension(w, y);
-		canvas.setPreferredSize(d);
-		jLabel2.setText(String.valueOf(count));
+		if (remove)
+			adjustSizes();
+	}
+
+
+	protected abstract T createFileView(Columns columns, FileEntry entry, FileInteractionIF interaction);
+
+	private JPanel getHeader()
+	{
+		return header;
+	}
+
+	void setHighlight(FileEntry entry)
+	{
+		synchronized (details)
+		{
+			for (FileView detail : details)
+			{
+				detail.setHighlighted(detail.getEntry().equals(entry));
+			}
+		}
 		repaint();
 	}
-    
-    private JPanel getHeader()
-    {
-    	return header;
-    }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    void setHighlight(FileEntry entry)
-    {
-    	synchronized (details)
-    	{
-    		for (DetailsFileView detail : details)
-        	{
-    			detail.setHighlighted(detail.getEntry().equals(entry));
-        	}
-    	}
-    	repaint();
-    }
-    
-    void setMarks()
-    {
-    	synchronized (details)
-    	{
-    		for (DetailsFileView detail : details)
-        	{
-    			detail.setHighlighted(marked.contains(detail));
-        	}
-    	}
-    	repaint();
-    }
 
-    void clearMarked()
-    {
-    	marked.clear();
-    	setMarks();
-    }
-    
-    void addMarked(FileEntry entry)
-    {
-    	marked.add(entry);
-    	setMarks();
-    }
-    
-    void removeMarked(FileEntry entry)
-    {
-    	marked.remove(entry);
-    	setMarks();
-    }
+	void setMarks()
+	{
+		synchronized (details)
+		{
+			for (FileView detail : details)
+			{
+				detail.setHighlighted(marked.contains(detail));
+			}
+		}
+		repaint();
+	}
+
+	void clearMarked()
+	{
+		marked.clear();
+		setMarks();
+	}
+
+	void addMarked(FileEntry entry)
+	{
+		marked.add(entry);
+		setMarks();
+	}
+
+	void removeMarked(FileEntry entry)
+	{
+		marked.remove(entry);
+		setMarks();
+	}
     
     
     
@@ -350,24 +305,21 @@ public class DetailsListView extends javax.swing.JPanel {
         jSplitPane1.setRightComponent(jScrollPane1);
 
         jTextField1.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jTextField1ActionPerformed(evt);
             }
         });
 
         jCheckBox1.setText("Case");
         jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jCheckBox1ActionPerformed(evt);
             }
         });
 
         jCheckBox2.setText("Show Hidden");
         jCheckBox2.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jCheckBox2ActionPerformed(evt);
             }
         });
@@ -433,4 +385,69 @@ public class DetailsListView extends javax.swing.JPanel {
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JTextField jTextField1;
     // End of variables declaration//GEN-END:variables
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+	protected void adjustSizes()
+	{
+		String filterText = jTextField1.getText();
+		if (!jCheckBox1.isSelected())
+			filterText = filterText.toLowerCase();
+
+		int w = jScrollPane1.getViewport().getWidth();
+		header.setEntryWidth(w);
+
+		int count = 0;
+		
+		LinkedList<T> toShow = new LinkedList<>();
+		synchronized (details)
+		{
+			canvas.removeAll();
+
+			for (T detail : details)
+			{
+				String name = detail.getEntry().getName();
+				if (!jCheckBox1.isSelected())
+					name = name.toLowerCase();
+				if (filterText.length() != 0 && !name.contains(filterText))
+				{
+					detail.setFiltered(true);
+					continue;
+				}
+				if (detail.getEntry().isHidden() && !jCheckBox2.isSelected())
+				{
+					detail.setFiltered(true);
+					continue;
+				}
+
+				detail.setFiltered(false);
+				canvas.add(detail);
+				toShow.add(detail);
+				count++;
+			}
+		}
+		
+		Dimension d = setLocations(toShow, w);
+
+		canvas.setPreferredSize(d);
+		jLabel2.setText(String.valueOf(count));
+		repaint();
+	}
+
+	protected abstract boolean getShowNameFirst();
+	protected abstract boolean getFixedColumns();
+	protected abstract Dimension setLocations(LinkedList<T> toShow, int w);
+	protected abstract void sortColumns(int column, boolean reverse);
 }

@@ -16,7 +16,7 @@ public final class Serialization {
 
 	public static Serialization writer = new Serialization();
 
-	ObjectMapper objectMapper = new ObjectMapper();
+	private ObjectMapper objectMapper = new ObjectMapper();
 	
 	private Serialization()
 	{

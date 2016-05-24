@@ -11,10 +11,10 @@ import files.model.FileEntry;
 import files.model.FileEntryAttributes.FileEntryAttributeKey;
 import files.model.FileEntryAttributes.FileEntryAttributeValue;
 
-public class SimpleEntryView extends JPanel {
+public class FileViewSimple extends JPanel {
 	private FileEntry entry;
 
-	public SimpleEntryView(FileEntry entry) {
+	public FileViewSimple(FileEntry entry) {
 		this.entry = entry;
 	}
 

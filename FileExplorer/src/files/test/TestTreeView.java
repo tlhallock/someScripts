@@ -5,18 +5,18 @@ import java.io.IOException;
 import java.nio.file.Paths;
 
 import files.app.Application;
-import files.gui.RootViewExplorerColumns;
+import files.gui.RootViewExplorerTree;
 import files.model.FileEntry;
 import files.util.SinglePanelFrame;
 
-public class TestColumnView {
+public class TestTreeView
+{
 
-	
 	public static void main(String[] args) throws IOException
 	{
 		Application.launchApplication();
 		
-		RootViewExplorerColumns folderView = new RootViewExplorerColumns();
+		RootViewExplorerTree folderView = new RootViewExplorerTree();
 		SinglePanelFrame.showPanel(folderView, new Rectangle(500,500,500,500), "columns");
 		folderView.show(FileEntry.load(Paths.get(".")));
 	}

@@ -3,6 +3,7 @@ package files.app;
 import java.util.LinkedList;
 
 import files.app.Logger.LogLevel;
+import files.gui.FileViewHeader.SpacingPolicy;
 
 public class ExplorerSettings {
 
@@ -17,6 +18,7 @@ public class ExplorerSettings {
 	
 	private String knownExtensionsPath = "knownExtensions.json";
 	private String colorsPath = "colors.json";
+	private String templatesPath = "templates.json";
 
 	public ExplorerSettings()
 	{
@@ -66,5 +68,15 @@ public class ExplorerSettings {
 
 	public String getColorsPath() {
 		return colorsPath;
+	}
+
+	public String getTemplatesPath()
+	{
+		return templatesPath ;
+	}
+
+	public SpacingPolicy getDefaultSpacingPolicy()
+	{
+		return SpacingPolicy.EQUAL;
 	}
 }

@@ -16,7 +16,7 @@ import files.app.Logger.LogLevel;
  *
  * @author thallock
  */
-public class Console extends javax.swing.JPanel {
+public class RootViewConsole extends javax.swing.JPanel {
 	
 	LinkedList<String> lines = new LinkedList<>();
 	private int lastCharCount;
@@ -24,7 +24,7 @@ public class Console extends javax.swing.JPanel {
     /**
      * Creates new form Console
      */
-    public Console() {
+    public RootViewConsole() {
         initComponents();
     }
     

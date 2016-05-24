@@ -3,15 +3,15 @@ package files.app;
 import java.util.Comparator;
 import java.util.TreeSet;
 
-import files.gui.Console;
+import files.gui.RootViewConsole;
 import files.util.ComponentShowingListener;
 
 
 public class Logger
 {
-	TreeSet<Console> consoles = new TreeSet<>(new Comparator<Console>() {
+	TreeSet<RootViewConsole> consoles = new TreeSet<>(new Comparator<RootViewConsole>() {
 		@Override
-		public int compare(Console o1, Console o2) {
+		public int compare(RootViewConsole o1, RootViewConsole o2) {
 			return Integer.compare(System.identityHashCode(o1), System.identityHashCode(o2));
 		}
 	});
@@ -24,7 +24,7 @@ public class Logger
 		if (text.charAt(text.length()-1) != '\n')
 			text = text + '\n';
 		
-		for (Console console : consoles)
+		for (RootViewConsole console : consoles)
 			console.log(level, text);
 		
 		System.out.println(text);
@@ -40,7 +40,7 @@ public class Logger
 		
 		text += org.apache.commons.lang.exception.ExceptionUtils.getStackTrace(t);
 		
-		for (Console console : consoles)
+		for (RootViewConsole console : consoles)
 			console.log(level, text);
 		
 		System.out.println(text);
@@ -58,9 +58,9 @@ public class Logger
 		return settings.getCurrentLogLevel();
 	}
 
-	public Console createConsole()
+	public RootViewConsole createConsole()
 	{
-		Console console = new Console();
+		RootViewConsole console = new RootViewConsole();
 		
 		new ComponentShowingListener(console) {
 			@Override
