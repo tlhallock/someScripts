@@ -1,5 +1,6 @@
 package files.gui;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
@@ -33,8 +34,6 @@ public class FileViewHeader extends JPanel implements MouseListener, MouseMotion
 	private boolean inited;
 	private ColumnManager painter;
 
-	private int[] currentWidths = new int[FileEntryAttributeKey.values().length];
-	
 	private SpacingPolicy policy;
 	
 	private Column sortedIdx = null;
@@ -213,7 +212,8 @@ public class FileViewHeader extends JPanel implements MouseListener, MouseMotion
 		
 		boolean cutColumns = Application.getApplication().getSettings().cutColumns();
 		
-		g.setColor(Application.getApplication().getColorSelector().getColumnHeaderBackgroundColor(highlighted));
+                Color c = Application.getApplication().getColorSelector().getColumnHeaderBackgroundColor(highlighted);
+		g.setColor(c);
 		g.fillRect(0, 0, getWidth(), getHeight());
 
 		g.setColor(Application.getApplication().getColorSelector().getColumnHeaderForegroundColor(highlighted));

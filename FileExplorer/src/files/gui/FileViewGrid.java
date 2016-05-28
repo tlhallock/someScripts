@@ -6,9 +6,9 @@ import files.model.FileEntry;
 public class FileViewGrid extends FileView
 {
 
-	public FileViewGrid(Columns columns, FileEntry entry, FileInteractionIF interaction)
+	public FileViewGrid(Columns columns, FileEntry entry, FileInteractionIF interaction, FileFilterer filterer)
 	{
-		super(columns, entry, interaction);
+		super(columns, entry, interaction, filterer);
 	}
 
 }

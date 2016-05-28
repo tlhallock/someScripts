@@ -21,9 +21,9 @@ public class FileViewHorizontal extends FileView
 	
 	private int[] currentWidths = new int[FileEntryAttributeKey.values().length];
 	
-	public FileViewHorizontal(Columns columns, FileEntry entry, FileInteractionIF intera)
+	public FileViewHorizontal(Columns columns, FileEntry entry, FileInteractionIF intera, FileFilterer filterer)
 	{
-		super(columns, entry, intera);
+		super(columns, entry, intera, filterer);
 		
 		for (int i=0;i<currentWidths.length;i++)
 			currentWidths[i] = -1;
@@ -36,7 +36,7 @@ public class FileViewHorizontal extends FileView
 	
 	int getWidth(FileEntryAttributeKey key)
 	{
-		if (filtered) return 0;
+		if (isFiltered()) return 0;
 		return currentWidths[key.ordinal()] + WIDTH_BUFFER;
 	}
 	

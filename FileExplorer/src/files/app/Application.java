@@ -18,6 +18,7 @@ public final class Application
 	private ExtensionManager knownExtensions;
 	private ColorSelector selector;
         private TemplateManager templates;
+        private SystemInteractions system;
 	
 	
 	private Application() {}
@@ -33,9 +34,14 @@ public final class Application
 	public ExtensionManager getKnownFileTypes() {
 		return knownExtensions;
 	}
-	public ColorSelector getColorSelector() {
+	public ColorSelector getColorSelector()
+        {
 		return selector;
 	}
+        public SystemInteractions getSystem()
+        {
+            return system;
+        }
 
     public TemplateManager getTemplates()
     {
@@ -63,6 +69,7 @@ public final class Application
 		app.knownExtensions = ExtensionManager.load();
 		app.selector = ColorSelector.load();
                 app.templates = TemplateManager.load();
+                app.system = SystemInteractions.load();
 	}
 
 	

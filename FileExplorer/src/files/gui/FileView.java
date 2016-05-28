@@ -24,15 +24,16 @@ public abstract class FileView extends JPanel
 	
 	protected boolean highlighted;
 	protected boolean marked;
-	protected boolean filtered;
 
+	private FileFilterer filterer;
 	private FileInteractionIF interaction;
 
-	public FileView(Columns columns, FileEntry entry, FileInteractionIF intera)
+	public FileView(Columns columns, FileEntry entry, FileInteractionIF intera, FileFilterer filterer)
 	{
 		this.entry = entry;
 		this.columns = columns;
 		this.interaction = intera;
+		this.filterer = filterer;
 		
 		addMouseListener(new MouseAdapter() {
 			@Override
@@ -90,13 +91,9 @@ public abstract class FileView extends JPanel
 		return entry;
 	}
 
-	void setFiltered(boolean b)
-	{
-		filtered = b;
-	}
 	boolean isFiltered()
 	{
-		return filtered;
+		return filterer.filter(entry);
 	}
 
 }

@@ -16,7 +16,7 @@ import javax.swing.JScrollPane;
 
 import files.app.Application;
 
-public class MultipleSplitPane extends JPanel implements ComponentListener
+public class MultipleSplitPane<T extends JComponent> extends JPanel implements ComponentListener
 {
 	private static final int DIVIDER_WIDTH = 10;
 	
@@ -74,7 +74,7 @@ public class MultipleSplitPane extends JPanel implements ComponentListener
 		adjustBounds();
 	}
 
-	public void prependChild(JComponent component)
+	public void prependChild(T component)
 	{
 		synchronized (components)
 		{
@@ -97,7 +97,7 @@ public class MultipleSplitPane extends JPanel implements ComponentListener
 		adjustBounds();
 		repaint();
 	}
-	public void postpendChild(JComponent component)
+	public void postpendChild(T component)
 	{
 		synchronized (components)
 		{
@@ -144,10 +144,11 @@ public class MultipleSplitPane extends JPanel implements ComponentListener
     int getNumberOfChildren() {
         return components.size();
     }
-    JComponent getChild(int index)
-    {
-    	return components.get(index).component;
-    }
+    
+        T getChild(int index)
+        {
+            return components.get(index).component;
+        }
 
 	public int getChildEnd(int index) {
 		return components.get(index).currentStart + components.get(index).width + DIVIDER_WIDTH;
@@ -284,32 +285,22 @@ public class MultipleSplitPane extends JPanel implements ComponentListener
 	
 	
 	
-	
-	
-	
-	
-	
 
-    public static final class EntryNode
-    {
-    	private int index;
-    	
-    	private int currentStart;
+    public final class EntryNode {
+        private int index;
+
+        private int currentStart;
         private int width;
-        
-        private JComponent component;
 
-		private EntryNode(int index, int currentStart, int width, JComponent component) {
-			this.index = index;
-			this.currentStart = currentStart;
-			this.width = width;
-			this.component = component;
-		}
+        private T component;
+
+        private EntryNode(int index, int currentStart, int width, T component) {
+            this.index = index;
+            this.currentStart = currentStart;
+            this.width = width;
+            this.component = component;
+        }
     }
-
-
-
-
 
 
 

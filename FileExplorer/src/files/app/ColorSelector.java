@@ -346,13 +346,12 @@ public final class ColorSelector
 	private static final SerializableColorProperty SIMPLE_FILE_BACKGROUND 				= new SerializableColorProperty("simple view background"	                  , new SerializableColor(Color.green )    );
 	private static final SerializableColorProperty SHADOW 						= new SerializableColorProperty("shadow"                                          , new SerializableColor(Color.black )    );
 	private static final SerializableColorProperty DETAILS_COLUMN_DRAG 				= new SerializableColorProperty("column drag"                                     , new SerializableColor(Color.cyan  )    );
-	private static final SerializableColorProperty DETAILS_LIST_BACKGROUND				= new SerializableColorProperty("list background (is it used?)"                   , new SerializableColor(Color.cyan  )    );
+	private static final SerializableColorProperty DETAILS_LIST_HEADER_DRAG 			= new SerializableColorProperty("header drag"                                     , new SerializableColor(Color.cyan  )    );
 	private static final SerializableColorProperty DETAILS_COLUMN_DIVIDER 				= new SerializableColorProperty("column divider"                                  , new SerializableColor(Color.black )    );
 	private static final SerializableColorProperty DETAILS_LIST_HEADER_FOREGROUND_NHIGHLIGHTED 	= new SerializableColorProperty("DETAILS_LIST_HEADER_FOREGROUND_NHIGHLIGHTED"     , new SerializableColor(Color.black )    );
 	private static final SerializableColorProperty DETAILS_LIST_HEADER_FOREGROUND_HIGHLIGHTED 	= new SerializableColorProperty("DETAILS_LIST_HEADER_FOREGROUND__HIGHLIGHTED"     , new SerializableColor(Color.black )    );
 	private static final SerializableColorProperty DETAILS_LIST_HEADER_BACKGROUND_NHIGHLIGHTED 	= new SerializableColorProperty("DETAILS_LIST_HEADER_BACKGROUND_NHIGHLIGHTED"     , new SerializableColor(Color.WHITE )    );
-	private static final SerializableColorProperty DETAILS_LIST_HEADER_BACKGROUND_HIGHLIGHTED 	= new SerializableColorProperty("DETAILS_LIST_HEADER_BACKGROUND__HIGHLIGHTED"     , new SerializableColor(Color.white )    );
-	private static final SerializableColorProperty DETAILS_LIST_HEADER_DRAG 			= new SerializableColorProperty("header drag"                                     , new SerializableColor(Color.blue  )    );
+	private static final SerializableColorProperty DETAILS_LIST_HEADER_BACKGROUND_HIGHLIGHTED 	= new SerializableColorProperty("DETAILS_LIST_HEADER_BACKGROUND__HIGHLIGHTED"     , new SerializableColor(Color.blue  )    );
 	private static final SerializableColorProperty DETAILS_FILE_DIVIDER 				= new SerializableColorProperty("file divider"                                    , new SerializableColor(Color.white )    );
 	private static final SerializableColorProperty DETAILS_FILE_BACKGROUND_HIGHLIGHTED_MARKED 	= new SerializableColorProperty("details file background, highlighted, marked"    , new SerializableColor(COOL_ORANGE )    );
 	private static final SerializableColorProperty DETAILS_FILE_BACKGROUND_HIGHLIGHTED 		= new SerializableColorProperty("details file background, highlighted, not marked", new SerializableColor(OTHER_ORANGE)    );
@@ -366,6 +365,8 @@ public final class ColorSelector
 	private static final SerializableColorProperty DETAILS_FILE_FOREGROUND_EVEN 			= new SerializableColorProperty("details file foreground, even, not marked"       , new SerializableColor(Color.BLACK )    );
 	private static final SerializableColorProperty DETAILS_FILE_FOREGROUND_MARKED 			= new SerializableColorProperty("details file foreground, odd, marked"            , new SerializableColor(Color.BLACK )    );
 	private static final SerializableColorProperty DETAILS_FILE_FOREGROUND 				= new SerializableColorProperty("details file foreground, odd, not marked"        , new SerializableColor(Color.BLACK )    );
+        
+	private static final SerializableColorProperty DETAILS_LIST_BACKGROUND				= new SerializableColorProperty("list background (is it used?)"                   , new SerializableColor(Color.cyan  )    );
 	
 	
 	private static final SerializableColorProperty[] ALL_COLORS = new SerializableColorProperty[]

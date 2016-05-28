@@ -15,6 +15,7 @@ import java.util.LinkedList;
 import java.util.TreeSet;
 import java.util.stream.Stream;
 
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import files.app.Application;
@@ -29,13 +30,14 @@ import files.model.FileEntryAttributes.FileEntryAttributeKey;
  *
  * @author thallock
  */
-public abstract class ListView<T extends FileView> extends javax.swing.JPanel {
+public abstract class FolderViewList<T extends FileView> extends javax.swing.JPanel implements ComponentListener, FolderView, FileFilterer {
 
     protected int height = 50;
     
     protected FileViewHeader header;
     protected LinkedList<T> details;
     protected FileInteractionIF interaction;
+    private FileEntry current;
     
     private TreeSet<FileEntry> marked = new TreeSet<>();
         
@@ -62,53 +64,38 @@ public abstract class ListView<T extends FileView> extends javax.swing.JPanel {
     /**
      * Creates new form FolderView
      */
-    public ListView(FileEntryAttributeKey[] attributes) {
-    	details = new LinkedList<>();
+    public FolderViewList(FileEntryAttributeKey[] attributes) {
+        details = new LinkedList<>();
         header = new FileViewHeader(new ColumnManager() {
-			@Override
-			public void repaint() {
-				header.repaint();
-				canvas.repaint();
-			}
+            @Override
+            public void repaint() {
+                header.repaint();
+                canvas.repaint();
+            }
 
-			@Override
-			public void sort(int column, boolean reverse) {
-				sortColumns(column, reverse);
-				adjustSizes();
-			}
+            @Override
+            public void sort(int column, boolean reverse) {
+                sortColumns(column, reverse);
+                adjustSizes();
+            }
 
-			@Override
-			public int getDesiredWidth(FileEntryAttributeKey key)
-			{
-				return getMinimalDesiredWidth(key);
-			}}, getShowNameFirst(), getFixedColumns());
+            @Override
+            public int getDesiredWidth(FileEntryAttributeKey key) {
+                return getMinimalDesiredWidth(key);
+            }
+        }, getShowNameFirst(), getFixedColumns());
         initComponents();
         canvas.setLayout(null);
-        
-        int i=0;
-        for (FileEntryAttributeKey key : attributes)
-        	header.addColumn(new Column(i++, key));
-        
-        ComponentListener l = new ComponentListener() {
-			@Override
-			public void componentShown(ComponentEvent e) {
-				adjustSizes();
-			}
-			
-			@Override
-			public void componentResized(ComponentEvent e) {
-				adjustSizes();
-			}
-			
-			@Override
-			public void componentMoved(ComponentEvent e) {}
-			@Override
-			public void componentHidden(ComponentEvent e) {}
-		};
-		jScrollPane1.addComponentListener(l);
+
+        int i = 0;
+        for (FileEntryAttributeKey key : attributes) {
+            header.addColumn(new Column(i++, key));
+        }
+
+        jScrollPane1.addComponentListener(this);
 //		canvas.addComponentListener(l);
-		
-		adjustSizes();
+
+        adjustSizes();
     }
 
 
@@ -122,69 +109,45 @@ public abstract class ListView<T extends FileView> extends javax.swing.JPanel {
 		header.setFolderHighlighted(val);
 	}
 
-	public void setInteraction(FileInteractionIF interaction)
-	{
-		this.interaction = interaction;
-		synchronized (details)
-		{
-			for (FileView view : details)
-				view.setInteraction(interaction);
-		}
-	}
+    protected static void safelyLoad(LinkedList<FileEntry> list, Path p) {
+        try {
+            list.add(FileEntry.load(p));
+        } catch (IOException e) {
+            Application.getApplication().getLogger().log(LogLevel.Normal, "Unable to read file: " + p, e);
+        }
+    }
 
-	protected static void safelyLoad(LinkedList<FileEntry> list, Path p)
-	{
-		try
-		{
-			list.add(FileEntry.load(p));
-		} catch (IOException e)
-		{
-			Application.getApplication().getLogger().log(LogLevel.Normal, "Unable to read file: " + p, e);
-		}
-	}
+    protected void show(FileEntry p, boolean remove) {
+        this.current = p;
+        Application.getApplication().getLogger().log(LogLevel.Normal, "Showing " + p);
+        LinkedList<FileEntry> entries = new LinkedList<>();
 
-	public void show(Path p)
-	{
-		show(p, true);
-	}
+        // wtf mate
+        try (Stream<Path> list = Files.list(p.getPath());) {
+            list.forEach(x -> safelyLoad(entries, x));
+        } catch (IOException e) {
+            Application.getApplication().getLogger().log(LogLevel.Normal, "Unable to list " + p, e);
+        }
 
-	protected void show(Path p, boolean remove)
-	{
-		Application.getApplication().getLogger().log(LogLevel.Normal, "Showing " + p);
-		LinkedList<FileEntry> entries = new LinkedList<>();
+        synchronized (details) {
+            if (remove) {
+                canvas.removeAll();
+                details.clear();
+            }
 
-		// wtf mate
-		try (Stream<Path> list = Files.list(p);)
-		{
-			list.forEach(x -> safelyLoad(entries, x));
-		}
-		catch (IOException e)
-		{
-			Application.getApplication().getLogger().log(LogLevel.Normal, "Unable to list " + p, e);
-		}
+            for (FileEntry entry : entries) {
+                T detailView = createFileView(header.getColumns(), entry, interaction, this);
+                if (detailView == null)
+                	continue;
+                details.add(detailView);
+                detailView.setVisible(true);
+            }
+        }
 
-		synchronized (details)
-		{
-			if (remove)
-			{
-				canvas.removeAll();
-				details.clear();
-			}
-
-			for (FileEntry entry : entries)
-			{
-				T detailView = createFileView(header.getColumns(), entry, interaction);
-				details.add(detailView);
-				detailView.setVisible(true);
-			}
-		}
-
-		if (remove)
-			adjustSizes();
-	}
-
-
-	protected abstract T createFileView(Columns columns, FileEntry entry, FileInteractionIF interaction);
+        if (remove) {
+            adjustSizes();
+        }
+    }
 
 	private JPanel getHeader()
 	{
@@ -390,22 +353,85 @@ public abstract class ListView<T extends FileView> extends javax.swing.JPanel {
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+			@Override
+			public void componentShown(ComponentEvent e) {
+				adjustSizes();
+			}
+			
+			@Override
+			public void componentResized(ComponentEvent e) {
+				adjustSizes();
+			}
+			
+			@Override
+			public void componentMoved(ComponentEvent e) {}
+			@Override
+			public void componentHidden(ComponentEvent e) {}
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
+	public void setInteraction(FileInteractionIF interaction)
+	{
+		this.interaction = interaction;
+		synchronized (details)
+		{
+			for (FileView view : details)
+				view.setInteraction(interaction);
+		}
+	}
+        
+        @Override
+        public FileEntry getCurrentDirectoy() {
+            return current;
+        }
     
-    
-    
-    
-    
-    
-    
-    
+        @Override
+        public JComponent getView() {
+            return this;
+        }
+
+        @Override
+        public void goUpToDirectory(FileEntry entry)
+        {
+            showRootDirectory(entry);
+        }
+
+        @Override
+	public void showExistingDirectory(FileEntry p)
+	{
+            showRootDirectory(p);
+	}
+
+        @Override
+	public void showRootDirectory(FileEntry p)
+	{
+		show(p, true);
+	}
     
 	protected void adjustSizes()
 	{
-		String filterText = jTextField1.getText();
-		if (!jCheckBox1.isSelected())
-			filterText = filterText.toLowerCase();
-
 		int w = jScrollPane1.getViewport().getWidth();
 		header.setEntryWidth(w);
 
@@ -418,21 +444,9 @@ public abstract class ListView<T extends FileView> extends javax.swing.JPanel {
 
 			for (T detail : details)
 			{
-				String name = detail.getEntry().getName();
-				if (!jCheckBox1.isSelected())
-					name = name.toLowerCase();
-				if (filterText.length() != 0 && !name.contains(filterText))
-				{
-					detail.setFiltered(true);
+				if (detail.isFiltered())
 					continue;
-				}
-				if (detail.getEntry().isHidden() && !jCheckBox2.isSelected())
-				{
-					detail.setFiltered(true);
-					continue;
-				}
 
-				detail.setFiltered(false);
 				canvas.add(detail);
 				toShow.add(detail);
 				count++;
@@ -445,7 +459,32 @@ public abstract class ListView<T extends FileView> extends javax.swing.JPanel {
 		jLabel2.setText(String.valueOf(count));
 		repaint();
 	}
+	
+	public boolean filter(FileEntry entry)
+	{
 
+		String filterText = jTextField1.getText();
+		if (!jCheckBox1.isSelected())
+			filterText = filterText.toLowerCase();
+		
+		String name2 = entry.getName();
+		
+
+		if (filterText.length() != 0 && !name2.contains(filterText))
+		{
+			return true;
+		}
+		if (entry.isHidden() && !jCheckBox2.isSelected())
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+
+
+	protected abstract T createFileView(Columns columns, FileEntry entry, FileInteractionIF interaction, FileFilterer filterer);
 	protected abstract boolean getShowNameFirst();
 	protected abstract boolean getFixedColumns();
 	protected abstract Dimension setLocations(LinkedList<T> toShow, int w);

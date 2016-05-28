@@ -33,3 +33,5 @@ FileExplorer/nbproject/
 SnapshotLib/build.xml
 SnapshotLib/nbproject/
 
+/DockablePanels/build/
+/FileExplorer/build/

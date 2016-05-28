@@ -24,7 +24,7 @@ public class FileEntry
 {
 	private Path path;
 	
-	HashMap<FileEntryAttributeKey, FileEntryAttributeValue> values = new HashMap<>();
+	private HashMap<FileEntryAttributeKey, FileEntryAttributeValue> values = new HashMap<>();
 	
 	private boolean hidden;
 
@@ -33,6 +33,10 @@ public class FileEntry
 		this.path = path;
 	}
 
+        public String toString()
+        {
+            return path.toString();
+        }
 
 	public String getExtension()
 	{
@@ -49,6 +53,11 @@ public class FileEntry
 		return hidden;
 	}
 
+        public boolean isParentOf(FileEntry other)
+        {
+            return getPath().equals(other.getPath().getParent());
+        }
+        
 	public Path getPath() {
 		return path;
 	}
@@ -76,6 +85,9 @@ public class FileEntry
 	
 	public static FileEntry load(Path path) throws IOException
 	{
+		// Use file type detector...
+		
+		
 		File file = path.toFile();
 		BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
 		DosFileAttributes attrsW = Files.getFileAttributeView(path, DosFileAttributeView.class).readAttributes();
@@ -132,5 +144,14 @@ public class FileEntry
 //		Link_Distination("Desination", StringValue.class),
 		
 		return entry;
+	}
+	
+	public static String getParentPath(Path p)
+	{
+		Path parent = p.getParent();
+		if (parent == null)
+			return "/";
+		else
+			return parent.toString();
 	}
 }

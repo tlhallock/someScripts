@@ -5,9 +5,9 @@ import java.util.LinkedList;
 
 import files.model.FileEntryAttributes.FileEntryAttributeKey;
 
-public abstract class ListViewHorizontal<T extends FileViewHorizontal> extends ListView<T>
+public abstract class FolderViewListHorizontal<T extends FileViewHorizontal> extends FolderViewList<T>
 {
-	protected ListViewHorizontal(FileEntryAttributeKey[] attributes)
+	protected FolderViewListHorizontal(FileEntryAttributeKey[] attributes)
 	{
 		super(attributes);
 	}
@@ -24,8 +24,6 @@ public abstract class ListViewHorizontal<T extends FileViewHorizontal> extends L
 			return max;
 		}
 	}
-
-        
         
 	protected Dimension setLocations(LinkedList<T> toShow, int w)
 	{

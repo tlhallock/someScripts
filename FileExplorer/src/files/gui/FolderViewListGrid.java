@@ -1,18 +1,17 @@
 package files.gui;
 
-import files.gui.FileViewHeader.Columns;
-import files.model.FileEntry;
-import files.model.FileEntryAttributes.FileEntryAttributeKey;
 import java.awt.Dimension;
 import java.util.LinkedList;
 
-public class ListViewGrid extends ListView<FileViewGrid>
-{
+import files.gui.FileViewHeader.Columns;
+import files.model.FileEntry;
+import files.model.FileEntryAttributes.FileEntryAttributeKey;
 
-	public ListViewGrid(FileEntryAttributeKey[] attributes)
-	{
-		super(attributes);
-	}
+public class FolderViewListGrid extends FolderViewList<FileViewGrid>
+{
+    FolderViewListGrid(FileEntryAttributeKey[] attributes) {
+        super(attributes);
+    }
 
     @Override
     protected boolean getShowNameFirst() {
@@ -23,12 +22,10 @@ public class ListViewGrid extends ListView<FileViewGrid>
     protected boolean getFixedColumns() {
         return true;
     }
-    
 
-	protected FileViewGrid createFileView(Columns columns, FileEntry entry, FileInteractionIF interaction)
-	{
-		return new FileViewGrid(columns, entry, interaction);
-	}
+    protected FileViewGrid createFileView(Columns columns, FileEntry entry, FileInteractionIF interaction, FileFilterer filterer) {
+        return new FileViewGrid(columns, entry, interaction, filterer);
+    }
 
     @Override
     protected Dimension setLocations(LinkedList<FileViewGrid> toShow, int w) {

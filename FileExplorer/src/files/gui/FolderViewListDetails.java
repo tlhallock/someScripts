@@ -7,30 +7,16 @@ import files.model.FileEntry;
 import files.model.FileEntryAttributes.FileEntryAttributeKey;
 import files.model.FileEntryAttributes.FileEntryAttributeValue;
 
-public class ListViewDetails extends ListViewHorizontal<FileViewHorizontal>
+public class FolderViewListDetails extends FolderViewListHorizontal<FileViewHorizontal>
 {
-
-	public ListViewDetails()
-	{
-		this(new FileEntryAttributeKey[]
-                {
-                    FileEntryAttributeKey.All_Name,
-                    FileEntryAttributeKey.File_Length,
-                    FileEntryAttributeKey.File_LastModified,
-                    FileEntryAttributeKey.File_Created,
-                    FileEntryAttributeKey.File_Permissions,
-                    FileEntryAttributeKey.File_Type,
-                });
-	}
-
-	protected FileViewHorizontal createFileView(FileViewHeader.Columns columns, FileEntry entry, FileInteractionIF interaction)
-	{
-		return new FileViewHorizontal(columns, entry, interaction);
-	}
-        
-	public ListViewDetails(FileEntryAttributeKey[] attributes)
+	FolderViewListDetails(FileEntryAttributeKey[] attributes)
 	{
 		super(attributes);
+	}
+    
+	protected FileViewHorizontal createFileView(FileViewHeader.Columns columns, FileEntry entry, FileInteractionIF interaction, FileFilterer filterer)
+	{
+		return new FileViewHorizontal(columns, entry, interaction, filterer);
 	}
 
 	@Override
@@ -44,7 +30,7 @@ public class ListViewDetails extends ListViewHorizontal<FileViewHorizontal>
 	{
 		return false;
 	}
-
+	
 	protected void sortColumns(int column, boolean reverse)
 	{
 		synchronized(details)
@@ -65,5 +51,4 @@ public class ListViewDetails extends ListViewHorizontal<FileViewHorizontal>
 				}});
 		}
 	}
-
 }

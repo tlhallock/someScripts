@@ -4,6 +4,10 @@ import java.util.LinkedList;
 
 import files.app.Logger.LogLevel;
 import files.gui.FileViewHeader.SpacingPolicy;
+import files.gui.FolderViewListTree;
+import files.gui.RootViewFolderView;
+import files.model.FileEntry;
+import files.model.FileEntryAttributes;
 
 public class ExplorerSettings {
 
@@ -79,4 +83,41 @@ public class ExplorerSettings {
 	{
 		return SpacingPolicy.EQUAL;
 	}
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    public FileEntryAttributes.FileEntryAttributeKey[] getDefaultTreeColumns() {
+        return new FileEntryAttributes.FileEntryAttributeKey[]{
+            FileEntryAttributes.FileEntryAttributeKey.All_Name,
+            FileEntryAttributes.FileEntryAttributeKey.File_Length};
+    }
+
+    public FileEntryAttributes.FileEntryAttributeKey[] getDefaultColumnColumns() {
+        return new FileEntryAttributes.FileEntryAttributeKey[]{
+            FileEntryAttributes.FileEntryAttributeKey.All_Name,
+            FileEntryAttributes.FileEntryAttributeKey.File_Length,};
+    }
+
+    public FileEntryAttributes.FileEntryAttributeKey[] getDefaultDetailsColumns() {
+        return new FileEntryAttributes.FileEntryAttributeKey[]{
+            FileEntryAttributes.FileEntryAttributeKey.All_Name,
+            FileEntryAttributes.FileEntryAttributeKey.File_Length,
+            FileEntryAttributes.FileEntryAttributeKey.File_LastModified,
+            FileEntryAttributes.FileEntryAttributeKey.File_Created,
+            FileEntryAttributes.FileEntryAttributeKey.File_Permissions,
+            FileEntryAttributes.FileEntryAttributeKey.File_Type,};
+    }
+
+    public FileEntryAttributes.FileEntryAttributeKey[] getDefaultGridColumns() {
+        return new FileEntryAttributes.FileEntryAttributeKey[]{
+            FileEntryAttributes.FileEntryAttributeKey.All_Name
+        };
+    }
 }
