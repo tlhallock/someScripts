@@ -19,6 +19,7 @@ public final class Application
 	private ColorSelector selector;
         private TemplateManager templates;
         private SystemInteractions system;
+        private Opener opener;
 	
 	
 	private Application() {}
@@ -42,15 +43,15 @@ public final class Application
         {
             return system;
         }
+	public TemplateManager getTemplates()
+	{
+		return templates;
+	}
+	public Opener getOpener()
+	{
+		return opener;
+	}
 
-    public TemplateManager getTemplates()
-    {
-        return templates;
-    }
-	
-	
-	
-	
 	static Application app;
 	public static Application getApplication()
 	{
@@ -70,6 +71,7 @@ public final class Application
 		app.selector = ColorSelector.load();
                 app.templates = TemplateManager.load();
                 app.system = SystemInteractions.load();
+                app.opener = Opener.createOpener();
 	}
 
 	
